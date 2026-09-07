@@ -82,7 +82,11 @@ show there.
 
 **3D related** is already populated with your 7 Rookies projects and their
 cover images (in `images/work/3d/`), resized and compressed for the web.
-Their descriptions are still placeholders — fill those in when you can.
+5 of them (001, 002, 003, 006, 007) now have real titles, descriptions,
+and skill tags pulled directly from what you wrote on each Rookies page.
+Project 004 and 005 don't have a Rookies link yet, so their descriptions
+are still placeholder text — fill those in (and give them a `link`) once
+they're posted.
 
 **Contests** has one real entry, Jorge (Micro Jam 017: Islands) — full
 width on the grid, tagged "Game Jam!", with a real description already
