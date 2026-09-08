@@ -1,28 +1,28 @@
 /* ---------- Shared project data ----------
    Single source of truth for every project across the site. Used by the
-   Work page's category grids AND the homepage's rotating mosaic — add a
+   Work page's category grids AND the homepage's rotating mosaic - add a
    project once here and it shows up in both places automatically.
 
    For 3D related, Graphic Designer, Contests, and Games, clicking a tile
    opens an internal detail page (project.html?id=...) showing the
    description and skills/tags below, with a "View full project" button
-   linking to "link" — instead of jumping straight to an outside site.
+   linking to "link" - instead of jumping straight to an outside site.
    Commissions is the exception: those tiles link directly to their own
    dedicated case-study page (see commission-template.html), so they
    don't use "id"/"description" at all.
 
-   "id" — required for 3D related / Graphic Designer / Contests / Games.
-   A short, unique, URL-safe slug (no spaces) — this is what
+   "id" - required for 3D related / Graphic Designer / Contests / Games.
+   A short, unique, URL-safe slug (no spaces) - this is what
    project.html?id=... looks up.
 
-   "description" — shown on the project's detail page. Bracketed
+   "description" - shown on the project's detail page. Bracketed
    placeholders mean "replace me"; fill in the real brief/process/skills
    story whenever you have it.
 
-   "link" — the "View full project" destination on the detail page:
+   "link" - the "View full project" destination on the detail page:
    - a full URL (starting with http) opens in a NEW TAB (ArtStation,
      Rookies, itch.io, etc).
-   - '' (empty) — the button is simply omitted; the detail page still
+   - '' (empty) - the button is simply omitted; the detail page still
      shows the description/skills on their own.
 
    "image" is optional: leave it empty ('') to show a placeholder tile
@@ -33,28 +33,28 @@
    Defaults to 'cover' (fills the tile, cropping as needed).
 
    "downloadUrl" / "viewUrl" are optional: when either is set, the detail
-   page shows extra buttons — one to download a file directly, one to
+   page shows extra buttons - one to download a file directly, one to
    open a link (e.g. a PDF preview) in a new tab. */
 const PROJECTS = {
   '3d': [
-    { id: '3d-001', title: 'Tower — 001', tags: ['3D Modelling', 'Hard-Surface Modelling'], link: 'https://www.therookies.co/projects/103669', image: 'images/work/3d/project-001.jpg', description: 'A hand-built medieval tower house, modelled from a single reference image. An early hard-surface modelling exercise focused on translating a 2D concept into a fully realised 3D structure in Blender.' },
-    { id: '3d-002', title: 'Pocket Clock — 002', tags: ['3D Modelling', 'Detail', 'Shading & Materials'], link: 'https://www.therookies.co/projects/103670', image: 'images/work/3d/project-002.jpg', description: "A detailed steampunk-style pocket clock, modelled and rendered in Blender. This project introduced fine hard-surface detailing at a small scale, along with a first custom material built from scratch using Blender's Shading Nodes." },
-    { id: '3d-003', title: 'Star Destroyer — 003', tags: ['3D Animation', 'Geometry Nodes'], link: 'https://www.therookies.co/projects/104394', image: 'images/work/3d/project-003.jpg', description: 'A Star Wars–inspired hyperspace jump animation built around an original Titan-class Star Destroyer. Modelled and animated in Blender using Geometry Nodes — an exercise in combining hard-surface spaceship design with procedural animation.' },
-    { id: '3d-004', title: 'Project 004', tags: ['3D Modelling', 'Nature'], link: '', image: 'images/work/3d/project-004.jpg', description: '[Add a short description of this project — the brief, the process, and any specific techniques or software used.]' },
-    { id: '3d-005', title: 'Project 005', tags: ['Game Asset'], link: '', image: 'images/work/3d/project-005.jpg', description: '[Add a short description of this project — the brief, the process, and any specific techniques or software used.]' },
-    { id: '3d-006', title: 'Sand', tags: ['Environment', 'Procedural Shading'], link: 'https://www.therookies.co/projects/104813', image: 'images/work/3d/project-006.jpg', description: "A close-up, realistic beach sand environment with a stylised edge. Several approaches were tested — displacement and Subdivision rendered in Cycles, then a lighter EEVEE-based setup using Geometry Nodes — with final colour work finished in Photoshop." },
-    { id: '3d-007', title: 'Medieval Library Interior', tags: ['3D Modelling', 'Interior', 'Compositing'], link: 'https://www.therookies.co/projects/105375', image: 'images/work/3d/project-007.jpg', description: "A low-poly medieval library interior, built as a foundations project exploring environment design and set dressing in Blender. Modelled from a curated reference board, then finished using Blender's Compositor, with renders compared between Eevee and Cycles." },
+    { id: '3d-001', title: 'Tower - 001', tags: ['3D Modelling', 'Hard-Surface Modelling'], link: 'https://www.therookies.co/projects/103669', image: 'images/work/3d/project-001.webp', description: 'A hand-built medieval tower house, modelled from a single reference image. An early hard-surface modelling exercise focused on translating a 2D concept into a fully realised 3D structure in Blender.' },
+    { id: '3d-002', title: 'Pocket Clock - 002', tags: ['3D Modelling', 'Detail', 'Shading & Materials'], link: 'https://www.therookies.co/projects/103670', image: 'images/work/3d/project-002.webp', description: "A detailed steampunk-style pocket clock, modelled and rendered in Blender. This project introduced fine hard-surface detailing at a small scale, along with a first custom material built from scratch using Blender's Shading Nodes." },
+    { id: '3d-003', title: 'Star Destroyer - 003', tags: ['3D Animation', 'Geometry Nodes'], link: 'https://www.therookies.co/projects/104394', image: 'images/work/3d/project-003.webp', description: 'A Star Wars-inspired hyperspace jump animation built around an original Titan-class Star Destroyer. Modelled and animated in Blender using Geometry Nodes - an exercise in combining hard-surface spaceship design with procedural animation.' },
+    { id: '3d-004', title: 'Project 004', tags: ['3D Modelling', 'Nature'], link: '', image: 'images/work/3d/project-004.webp', description: '[Add a short description of this project - the brief, the process, and any specific techniques or software used.]' },
+    { id: '3d-005', title: 'Project 005', tags: ['Game Asset'], link: '', image: 'images/work/3d/project-005.webp', description: '[Add a short description of this project - the brief, the process, and any specific techniques or software used.]' },
+    { id: '3d-006', title: 'Sand', tags: ['Environment', 'Procedural Shading'], link: 'https://www.therookies.co/projects/104813', image: 'images/work/3d/project-006.webp', description: "A close-up, realistic beach sand environment with a stylised edge. Several approaches were tested - displacement and Subdivision rendered in Cycles, then a lighter EEVEE-based setup using Geometry Nodes - with final colour work finished in Photoshop." },
+    { id: '3d-007', title: 'Medieval Library Interior', tags: ['3D Modelling', 'Interior', 'Compositing'], link: 'https://www.therookies.co/projects/105375', image: 'images/work/3d/project-007.webp', description: "A low-poly medieval library interior, built as a foundations project exploring environment design and set dressing in Blender. Modelled from a curated reference board, then finished using Blender's Compositor, with renders compared between Eevee and Cycles." },
   ],
   graphic: [
-    { id: 'graphic-icon-library', title: 'Icon Library', tags: ['Icon Design'], link: 'https://www.behance.net/gallery/253470149/Icon-Library-UrbanEye', image: 'images/work/commissions/urbaneyept-icon-library.jpg', description: 'A custom UI icon set designed for UrbanEyePT\u2019s product interface, covering actions like editing, sharing, image uploads, notifications and layout views.' },
+    { id: 'graphic-icon-library', title: 'Icon Library', tags: ['Icon Design'], link: 'https://www.behance.net/gallery/253470149/Icon-Library-UrbanEye', image: 'images/work/commissions/urbaneyept-icon-library.webp', description: 'A custom UI icon set designed for UrbanEyePT\u2019s product interface, covering actions like editing, sharing, image uploads, notifications and layout views.' },
   ],
   // Each tile links to its own internal case-study page (see
   // commission-template.html / commission-template-multi.html) rather
   // than an outside site.
   commissions: [
-    { title: 'UrbanEyePT', tags: ['Graphic Design', '3D Modelling'], link: 'commission-urbaneyept.html', image: 'images/work/commissions/urbaneyept-mosaic.jpg' },
+    { title: 'UrbanEyePT', tags: ['Graphic Design', '3D Modelling'], link: 'commission-urbaneyept.html', image: 'images/work/commissions/urbaneyept-mosaic.webp' },
   ],
-  // One tile per row, full width — set up in styles.css via the
+  // One tile per row, full width - set up in styles.css via the
   // "grid-full" class applied automatically to this category below.
   contests: [
     {
@@ -62,11 +62,11 @@ const PROJECTS = {
       title: 'Jorge',
       tags: ['Game Jam!'],
       link: 'https://fmag.itch.io/jorge',
-      image: 'images/work/contests/jorge-cover.png',
+      image: 'images/work/contests/jorge-cover.webp',
       fit: 'contain',
       downloadUrl: 'files/jorge-descriptive-memory.pdf',
       viewUrl: 'https://acrobat.adobe.com/id/urn:aaid:sc:eu:b65756da-3ff8-4b00-8046-59eacebe818a',
-      description: 'A survival game made in 48 hours for Micro Jam 017: Islands, where a castaway named Roberto Rambo must escape a volcanic archipelago. Built with a 3-person team (Francisco Magueijo and Tom\u00e1s Gon\u00e7alves on programming); I created every 2D art asset in the game \u2014 environments, props, items and enemy sprites \u2014 using Aseprite for the first time.',
+      description: 'A survival game made in 48 hours for Micro Jam 017: Islands, where a castaway named Roberto Rambo must escape a volcanic archipelago. Built with a 3-person team (Francisco Magueijo and Tom\u00e1s Gon\u00e7alves on programming); I created every 2D art asset in the game - environments, props, items and enemy sprites - using Aseprite for the first time.',
     },
   ],
   games: [],
@@ -108,7 +108,7 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
    Runs on every page. Any link pointing to work.html (e.g. every
    "← Back to Work" link on a commission page, contest download, etc.)
    automatically gets the last category the person was browsing appended
-   to it, so "Back to Work" always returns to where they actually were —
+   to it, so "Back to Work" always returns to where they actually were -
    this applies to every current and future project detail page without
    needing any extra setup on that page. */
 (function restoreBackToWorkLinks() {
@@ -122,10 +122,22 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
 /* ---------- Homepage: rotating project mosaic ----------
    Pulls every project image already defined in PROJECTS above (no
    separate list to maintain) and cycles each tile through a random one
-   every 5–7 seconds, with a slow crossfade. As soon as a new project is
+   every 5-7 seconds, with a slow crossfade. As soon as a new project is
    added anywhere in PROJECTS, its cover image joins this rotation
    automatically. No two tiles ever show the same project at the same
-   time, and a tile never repeats the image it's already showing. */
+   time, and a tile never repeats the image it's already showing.
+
+   Uses the small pre-generated thumbnail next to each full-size image
+   (images/.../thumbs/<same filename>) rather than the full grid/detail
+   version, since these tiles are small and this rotation loads several
+   images right away - keeps the homepage light, especially on mobile. */
+function toThumbPath(imagePath) {
+  const parts = imagePath.split('/');
+  const filename = parts.pop();
+  parts.push('thumbs', filename);
+  return parts.join('/');
+}
+
 (function homeGalleryRotation() {
   const gallery = document.querySelector('[data-home-gallery]');
   if (!gallery) return;
@@ -136,7 +148,7 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
     list.forEach((project) => {
       if (project.image && !seen.has(project.image)) {
         seen.add(project.image);
-        pool.push({ src: project.image, alt: project.title });
+        pool.push({ src: toThumbPath(project.image), alt: project.title });
       }
     });
   });
@@ -171,11 +183,11 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
     // shown by any other tile either.
     let candidates = pool.filter((p) => p.src !== ownSrc && !shownElsewhere.includes(p.src));
 
-    // Not enough unique images to go around (more tiles than pool size) —
+    // Not enough unique images to go around (more tiles than pool size) -
     // fall back to just avoiding this tile's own current image.
     if (candidates.length === 0) candidates = pool.filter((p) => p.src !== ownSrc);
 
-    // Only one image exists in total — nothing else to pick.
+    // Only one image exists in total - nothing else to pick.
     if (candidates.length === 0) candidates = pool;
 
     return candidates[Math.floor(Math.random() * candidates.length)];
@@ -193,7 +205,7 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
         img.style.opacity = '1';
       }, FADE_MS);
     }
-    // Random 5–7s on display per tile, staggered so they don't all flip together.
+    // Random 5-7s on display per tile, staggered so they don't all flip together.
     setInterval(rotate, 5000 + Math.random() * 2000);
   });
 })();
@@ -210,7 +222,7 @@ if (galleryGrid) {
   const FULL_WIDTH_CATEGORIES = ['contests'];
   // Categories whose tiles open the shared project.html detail page
   // instead of linking straight out. Commissions is deliberately left
-  // out — it already links to its own dedicated case-study page.
+  // out - it already links to its own dedicated case-study page.
   const DETAIL_PAGE_CATEGORIES = ['3d', 'graphic', 'contests', 'games'];
 
   const params = new URLSearchParams(window.location.search);
@@ -228,13 +240,19 @@ if (galleryGrid) {
   function buildTile(project, index, category) {
     const variant = VARIANTS[index % VARIANTS.length];
     const imgClass = project.fit === 'contain' ? 'gallery-img contain' : 'gallery-img';
+    // Full-width tiles (Contests) can render quite large, so they keep the
+    // full-size image. Every other grid is small (3-column, or 1-column on
+    // mobile but still narrow), so those use the pre-generated thumbnail -
+    // meaningfully lighter, especially on phones.
+    const isFullWidth = FULL_WIDTH_CATEGORIES.includes(category);
+    const gridImageSrc = project.image ? (isFullWidth ? project.image : toThumbPath(project.image)) : '';
     const visual = project.image
-      ? `<img class="${imgClass}" src="${project.image}" alt="${project.title}">`
+      ? `<img class="${imgClass}" src="${gridImageSrc}" alt="${project.title}" loading="lazy" decoding="async">`
       : `<div class="gallery-visual ${variant}"><div class="gallery-shape"></div></div>`;
 
     // Most categories route through the shared project detail page, which
     // shows a description + skills before sending people to the outside
-    // link — always same-tab since it's part of this site.
+    // link - always same-tab since it's part of this site.
     if (DETAIL_PAGE_CATEGORIES.includes(category) && project.id) {
       const el = document.createElement('a');
       el.className = 'gallery-item';
@@ -247,7 +265,7 @@ if (galleryGrid) {
       return el;
     }
 
-    // Fallback — used by Commissions, which link straight to their own
+    // Fallback - used by Commissions, which link straight to their own
     // dedicated case-study page rather than the generic project template.
     const hasLink = Boolean(project.link);
     const el = document.createElement(hasLink ? 'a' : 'div');
@@ -292,7 +310,7 @@ if (galleryGrid) {
     tagOptions.innerHTML = uniqueTags.map((tag) => `<option value="${tag}">`).join('');
     if (searchInput) {
       searchInput.placeholder = uniqueTags.length
-        ? `Search by tag — e.g. ${uniqueTags[0]}`
+        ? `Search by tag - e.g. ${uniqueTags[0]}`
         : 'Search by tag';
     }
   }
@@ -358,7 +376,7 @@ if (galleryGrid) {
    Looks up the requested id in PROJECTS (every category except
    Commissions, which uses its own dedicated pages), then fills in the
    title, skill tags, cover image, description, and a "View full
-   project" button linking out — plus download/view buttons for any
+   project" button linking out - plus download/view buttons for any
    attached document (see Jorge's PDF for an example). */
 (function renderProjectDetail() {
   const titleEl = document.querySelector('[data-project-title]');
@@ -394,7 +412,7 @@ if (galleryGrid) {
     return;
   }
 
-  document.title = `${found.title} — Ruben Alves`;
+  document.title = `${found.title} - Ruben Alves`;
   eyebrowEl.textContent = (CATEGORY_LABELS[foundCategory] || 'Project').toUpperCase();
   titleEl.textContent = found.title;
 
@@ -415,7 +433,7 @@ if (galleryGrid) {
 
   descEl.textContent =
     found.description ||
-    "Add a short description of this project — the brief, the process, and what you're proud of.";
+    "Add a short description of this project - the brief, the process, and what you're proud of.";
 
   // Extra buttons inserted before the existing "Back to Work" button:
   // the outside link (if any), then download/view for an attached doc.
