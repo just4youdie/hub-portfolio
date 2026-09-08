@@ -96,29 +96,57 @@ plus its descriptive-memory PDF (in `files/`) via `downloadUrl`/`viewUrl`.
 ## Homepage mosaic
 
 The 5 tiles on the right of the homepage hero automatically pull from
-every cover image in `PROJECTS` (across all categories) — there's no
-separate list to maintain. Each tile independently swaps to a new random
-image every 5–7 seconds with a slow crossfade, staggered per tile so they
-don't all flip at once.
+every cover image in `PROJECTS` (across all categories) - there's no
+separate list to maintain. They're laid out as a loose, overlapping
+collage rather than a strict grid - varied sizes, slight rotations, one
+circular tile - each with a gentle floating idle animation, so it doesn't
+read as a rigid box of squares. Each tile independently swaps to a new
+random image every 5-7 seconds with a slow crossfade, staggered per tile
+so they don't all flip at once.
 
 - A tile never repeats the image it's already showing, and no two tiles
-  ever display the same project at the same time — every rotation always
+  ever display the same project at the same time - every rotation always
   picks something genuinely different from what's currently on screen
   (its own and every other tile's). That same image is still free to come
   back around later once others have had their turn.
+- The mosaic loads small, pre-generated thumbnails (see "Image sizes and
+  formats" below), not the full grid/detail images - it's the one place
+  on the site that shows several images immediately, so keeping those
+  particular files tiny matters most here.
 - If a project's `image` is `''` (no cover yet), it's simply excluded
   from the rotation.
 - If there are no images anywhere in `PROJECTS` yet, the whole mosaic
   hides itself rather than showing blank tiles.
 - The mosaic is decorative (not clickable, and marked `aria-hidden` for
-  screen readers) — its job is just to prove there's real work behind the
+  screen readers) - its job is just to prove there's real work behind the
   "Explore selected work" button. Send people to Work for the actual,
   clickable gallery.
-- Timing lives in `script.js` inside `homeGalleryRotation()`: `FADE_MS`
-  controls the crossfade length (keep it matched to the CSS transition
-  duration on `.home-gallery-img`), and the `setInterval(rotate, 5000 +
-  Math.random() * 2000)` line controls how long each image stays on
-  screen.
+- Layout (position/size/rotation per tile) lives in `styles.css` under
+  `.home-gallery-item:nth-child(...)`. Timing lives in `script.js` inside
+  `homeGalleryRotation()`: `FADE_MS` controls the crossfade length (keep
+  it matched to the CSS transition duration on `.home-gallery-img`), and
+  the `setInterval(rotate, 5000 + Math.random() * 2000)` line controls how
+  long each image stays on screen.
+
+## Image sizes and formats
+
+Every cover image ships as WebP (smaller than the original JPEG/PNG at
+the same visual quality) in two sizes:
+
+- `images/.../project-name.webp` - the full-size version (up to 1400px
+  wide), used on Work page grid tiles and the project detail page.
+- `images/.../thumbs/project-name.webp` - a small version (up to 640px
+  wide) with the exact same filename, used only by the homepage mosaic.
+  `toThumbPath()` in `script.js` derives this path automatically from
+  `image`, so you never set it separately - just make sure a `thumbs/`
+  version with a matching filename exists alongside the full one.
+
+Work page grid images also load with `loading="lazy"` so they don't
+download until they're about to scroll into view. When adding a new
+project image, run it through the same resize/compress step (both sizes,
+WebP) rather than dropping in an original photo/render straight from
+Blender or Photoshop - those are typically many megabytes and will make
+the site noticeably heavier, especially on mobile connections.
 
 ## "Wave" CTA styling
 
@@ -126,7 +154,7 @@ The homepage's "Explore selected work" button and the "Download CV" link
 in the header (on every page) share a `wave-cta` modifier class: fully
 rounded corners plus a slow, smooth greyscale/chrome shimmer that eases
 back and forth continuously (no jump-cut) via `background-position`. It's
-opt-in — add `wave-cta` alongside `button button-dark` or `nav-cv` on any
+opt-in - add `wave-cta` alongside `button button-dark` or `nav-cv` on any
 other link if you want the same effect elsewhere; every other button on
 the site is unaffected. Colours and timing are set in `styles.css` under
 `.button.wave-cta,.nav-cv.wave-cta` and the `waveFlow` keyframes (currently
