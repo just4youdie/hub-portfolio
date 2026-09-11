@@ -1,0 +1,21 @@
+# External link check - runs weekly via .github/workflows/external-links.yml
+# (internal links are already checked on every push by scripts/validate-site.mjs).
+# Local run: lychee --config lychee.toml _site   (after `npm run build`)
+
+max_retries = 3
+retry_wait_time = 5
+timeout = 30
+max_concurrency = 8
+no_progress = true
+cache = true
+max_cache_age = "1d"
+user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36"
+
+# 429 = rate limited, 999 = LinkedIn's "no bots" code. Neither means the link is dead.
+accept = ["200..=299", "429", "999"]
+
+# Sites that block automated checkers outright. Check these by hand now and then.
+exclude = [
+  '^https?://(www\.)?instagram\.com',
+  '^https?://(www\.)?linkedin\.com',
+]
