@@ -1,0 +1,5 @@
+node_modules/
+_site/
+.lycheecache
+.DS_Store
+Thumbs.db

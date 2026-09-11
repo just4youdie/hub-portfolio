@@ -1,0 +1,50 @@
+# External links rot quietly (a Rookies post gets deleted, the Spline scene is
+# unpublished...). This checks them weekly instead of on every push, so a
+# flaky third-party site never blocks a deploy. A failed run emails whoever
+# last edited this file; details are in the run's summary.
+name: External links
+
+on:
+  schedule:
+    - cron: '23 7 * * 1' # Mondays 07:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Build _site/
+        run: node scripts/build.mjs
+
+      - name: Restore lychee cache
+        uses: actions/cache@v6
+        with:
+          path: .lycheecache
+          key: lychee-${{ github.sha }}
+          restore-keys: lychee-
+
+      - name: Check links in pages, script.js (PROJECTS) and styles.css
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --config lychee.toml '_site/**/*.html' _site/script.js _site/styles.css
+
+      # lychee doesn't read the <spline-viewer url="..."> attribute, and the
+      # 3D background silently disappears if the scene is unpublished.
+      - name: Check Spline viewer + scene
+        run: |
+          fail=0
+          for url in $(grep -rhoE '(spline-viewer url|src)="https://[^"]*spline[^"]*"' _site --include='*.html' | sed -E 's/.*="([^"]+)"/\1/' | sort -u); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' -L --retry 3 "$url")
+            echo "${code}  ${url}"
+            [ "$code" = "200" ] || fail=1
+          done
+          exit $fail

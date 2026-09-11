@@ -1,0 +1,26 @@
+# Everything in the repo is published EXCEPT what matches below.
+# Syntax (gitignore-lite): `name` matches at any depth, `dir/` matches a
+# directory, a leading `/` anchors to the repo root, `*` is a wildcard.
+# `npm run build` copies the rest into _site/, which is what CI validates
+# and what gets deployed - so a file listed here never goes live.
+
+# Tooling / repo plumbing
+/.git/
+/.github/
+/node_modules/
+/_site/
+/scripts/
+/.deployignore
+/.gitignore
+/.htmlvalidate.json
+/lychee.toml
+/package.json
+/package-lock.json
+*.md
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Authoring templates - duplicated into real pages, never published as-is
+/commission-template*.html
