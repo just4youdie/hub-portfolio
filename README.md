@@ -228,6 +228,9 @@ same image and link.
 3. Double check the social links in `contact.html` match your current
    profiles.
 
+The CI enforces the first point: until `cv.pdf` exists, deploys are blocked
+(it's linked from every page).
+
 ## Spline background
 
 Each page includes the same block:
@@ -249,7 +252,39 @@ All four pages are responsive: safe-area padding for notched phones,
 content, a full-width tap-friendly nav drawer, and a gallery grid that
 drops from 3 → 2 → 1 columns as the screen narrows.
 
-## Publishing
+## Publishing & CI
 
-Static site — host on GitHub Pages, Netlify, Vercel, Cloudflare Pages, or
-any normal web host. Keep all files in the same folder.
+Live at **https://rubenalvesportefolio.github.io**, deployed by GitHub
+Actions from the `main` branch. There is no build step for the site itself -
+`npm` is only used for the checks.
+
+**How a change goes live:** push to `main` (or merge a PR) → the **Site**
+workflow copies the publishable files into `_site/` (everything except what's
+listed in `.deployignore` - README, templates, tooling), validates that
+folder, and only if it passes deploys it and smoke-tests the live URL.
+If a check fails, nothing is deployed and the previous version stays up.
+
+**What gets checked on every push / PR** (`npm run validate` runs the same
+thing locally - needs Node 20+ and `npm install` once):
+
+- Every local link and image on every page resolves (e.g. a missing `cv.pdf`).
+- `script.js` has no syntax errors, and every `PROJECTS` entry is sane:
+  unique URL-safe `id`, existing `image` **and** its `thumbs/` twin,
+  existing `downloadUrl` files, commission `link`s pointing at real pages,
+  typo'd field names flagged.
+- Image budgets: full-size covers ≤ 400 KB, thumbnails ≤ 120 KB (tune in
+  `BUDGET` at the top of `scripts/validate-site.mjs`).
+- No leftover `[BRACKETED]` template placeholders on published pages.
+- Standard HTML validity (`html-validate`, config in `.htmlvalidate.json`).
+- Warnings only (never block): placeholder project descriptions, the
+  Instagram link pointing at instagram.com itself, unused images.
+
+**Weekly:** the **External links** workflow checks every outside link
+(Rookies, itch.io, Behance, the Spline scene...) and fails if one has died.
+Instagram and LinkedIn block automated checkers, so check those by hand.
+
+**Preview locally:** `npm run serve` builds `_site/` and opens it at
+http://localhost:8080.
+
+Keep all site files in the repo root (subfolders like `images/` are fine).
+A new file is published automatically unless it matches `.deployignore`.

@@ -1,0 +1,19 @@
+{
+  "name": "rubenalvesportefolio",
+  "private": true,
+  "description": "Ruben Alves - portfolio (static site). Tooling only; the site itself has no build step.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check:html": "html-validate \"_site/**/*.html\"",
+    "check:site": "node scripts/validate-site.mjs _site",
+    "validate": "npm run build && npm run check:site && npm run check:html",
+    "serve": "npm run build && npx --yes http-server _site -c-1 -p 8080 -o"
+  },
+  "devDependencies": {
+    "html-validate": "^11.15.0"
+  }
+}
