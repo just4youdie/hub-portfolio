@@ -1,0 +1,23 @@
+# Keeps the CI actions and html-validate current. One grouped PR per
+# ecosystem per month, so it stays quiet.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      tooling:
+        patterns: ['*']
+    commit-message:
+      prefix: chore

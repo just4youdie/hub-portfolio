@@ -1,0 +1,75 @@
+# Validate every push/PR; deploy to GitHub Pages only from main, and only
+# if validation passed. The deploy job ships the exact _site/ that was checked.
+name: Site
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build _site/
+        run: npm run build
+
+      - name: Site checks (links, PROJECTS data, image budgets, placeholders)
+        run: npm run check:site
+
+      - name: HTML validation
+        run: npm run check:html
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site/
+
+  deploy:
+    name: Deploy
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
+
+      - name: Smoke test the live site
+        env:
+          BASE: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          fail=0
+          for p in "" work.html about.html contact.html project.html cv.pdf styles.css script.js; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --retry 5 --retry-delay 6 --retry-all-errors "${BASE}${p}")
+            echo "${code}  ${BASE}${p}"
+            [ "$code" = "200" ] || fail=1
+          done
+          exit $fail
