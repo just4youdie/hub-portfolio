@@ -590,6 +590,7 @@ if (galleryGrid) {
   const lightbox = document.querySelector('[data-lightbox]');
   if (!lightbox) return;
 
+  lightbox.setAttribute('aria-hidden', 'true');
   const lightboxImg = lightbox.querySelector('[data-lightbox-img]');
   const closeBtn = lightbox.querySelector('[data-lightbox-close]');
 
