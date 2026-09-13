@@ -1,9 +1,37 @@
+/* ---------- Spline background: skip on mobile / reduced motion ----------
+   The interactive 3D background is by far the heaviest thing on this
+   site (a live WebGL scene, rendering continuously) - on phones
+   especially, that can mean real battery drain and jank, which is why
+   this only loads it for larger screens without a reduced-motion
+   preference. Everyone else gets the flat dark background + gradient
+   scrim underneath it instead (already designed to look intentional on
+   its own, not just a "fallback"). This check runs once, before
+   anything else, so mobile visitors never pay for the Spline script or
+   scene download at all - not even a paused/hidden copy of it. */
+(function initSplineBackground() {
+  const bg = document.querySelector('.spline-bg');
+  if (!bg) return;
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isSmallScreen = window.matchMedia('(max-width: 850px)').matches;
+  if (prefersReducedMotion || isSmallScreen) return;
+
+  const script = document.createElement('script');
+  script.type = 'module';
+  script.src = 'https://cdn.spline.design/@splinetool/viewer@2.0.9/build/spline-viewer.js';
+  document.head.appendChild(script);
+
+  const viewer = document.createElement('spline-viewer');
+  viewer.setAttribute('url', 'https://prod.spline.design/R5h5fsEqatRWan44/scene.splinecode');
+  bg.insertBefore(viewer, bg.firstChild);
+})();
+
 /* ---------- Shared project data ----------
    Single source of truth for every project across the site. Used by the
-   Work page's category grids AND the homepage's rotating mosaic - add a
-   project once here and it shows up in both places automatically.
+   Work page's category grids, the project detail page, and the Best
+   Projects page - add a project once here and it's available everywhere.
 
-   For 3D related, Graphic Designer, Contests, and Games, clicking a tile
+   For 3D, Graphic Design, Contests, and Games, clicking a tile
    opens an internal detail page (project.html?id=...) showing the
    description and skills/tags below, with a "View full project" button
    linking to "link" - instead of jumping straight to an outside site.
@@ -11,7 +39,7 @@
    dedicated case-study page (see commission-template.html), so they
    don't use "id"/"description" at all.
 
-   "id" - required for 3D related / Graphic Designer / Contests / Games.
+   "id" - required for 3D / Graphic Design / Contests / Games.
    A short, unique, URL-safe slug (no spaces) - this is what
    project.html?id=... looks up.
 
@@ -27,6 +55,12 @@
 
    "image" is optional: leave it empty ('') to show a placeholder tile
    until you have a real image ready.
+
+   "images" is optional: an array of extra image paths shown in a small
+   gallery grid on the project's detail page, below the main cover/
+   description (not shown on the grid tile itself, which only ever uses
+   "image"). Use this when a project has more than one shot worth seeing
+   (e.g. day/night renders, multiple angles).
 
    "fit" is optional: set to 'contain' for a cover image that should
    never be cropped (e.g. a wordmark/banner with transparent padding).
@@ -44,6 +78,7 @@ const PROJECTS = {
     { id: '3d-005', title: 'Project 005', tags: ['Game Asset'], link: '', image: 'images/work/3d/project-005.webp', description: '[Add a short description of this project - the brief, the process, and any specific techniques or software used.]' },
     { id: '3d-006', title: 'Sand', tags: ['Environment', 'Procedural Shading'], link: 'https://www.therookies.co/projects/104813', image: 'images/work/3d/project-006.webp', description: "A close-up, realistic beach sand environment with a stylised edge. Several approaches were tested - displacement and Subdivision rendered in Cycles, then a lighter EEVEE-based setup using Geometry Nodes - with final colour work finished in Photoshop." },
     { id: '3d-007', title: 'Medieval Library Interior', tags: ['3D Modelling', 'Interior', 'Compositing'], link: 'https://www.therookies.co/projects/105375', image: 'images/work/3d/project-007.webp', description: "A low-poly medieval library interior, built as a foundations project exploring environment design and set dressing in Blender. Modelled from a curated reference board, then finished using Blender's Compositor, with renders compared between Eevee and Cycles." },
+    { id: '3d-008', title: 'Exposição - Telefones do Mundo', tags: ['3D Modelling', 'University Work'], link: '', image: 'images/work/3d/project-008.webp', images: ['images/work/3d/project-008-b.webp', 'images/work/3d/project-008-c.webp', 'images/work/3d/project-008-d.webp'], description: 'In this project made during university we were tasked to create all the necessary graphic assets to build an expo about phones in a specific space we were given. It was a 3-person group; I was responsible for taking the graphic work made in Illustrator by my teammates and building a mockup of the exhibition space in Blender, placing the phones according to our vision for the exhibition.' },
   ],
   graphic: [
     { id: 'graphic-icon-library', title: 'Icon Library', tags: ['Icon Design'], link: 'https://www.behance.net/gallery/253470149/Icon-Library-UrbanEye', image: 'images/work/commissions/urbaneyept-icon-library.webp', description: 'A custom UI icon set designed for UrbanEyePT\u2019s product interface, covering actions like editing, sharing, image uploads, notifications and layout views.' },
@@ -70,14 +105,55 @@ const PROJECTS = {
     },
   ],
   games: [],
+  '3dprint': [
+    {
+      id: '3dprint-mysterybox',
+      title: 'Mystery Box - Mystery Travel',
+      tags: ['3D Printing', 'University Work'],
+      link: '',
+      image: 'images/work/3dprint/mysterybox.webp',
+      images: ['images/work/3dprint/mysterybox-b.webp', 'images/work/3dprint/mysterybox-c.webp'],
+      downloadUrl: 'files/mystery-box-project-report.pdf',
+      description: "A university project for Design de Interfaces e Usabilidade III (3rd year, Design Communication and Audiovisual, ESART), built with a 3-person team (João Teixeira and Tiago Crispim): Mystery Travel, a surprise travel service centred on a physical Mystery Box. The box holds a symbolic coin and an NFC tag that opens a companion app revealing the trip. I designed the box itself in Blender - including the world-map side panels and lid branding - and sent it out for 3D printing (PLA); I was also responsible for the transition from the visual design into the app prototype using Adobe XD.",
+    },
+  ],
 };
 
 const CATEGORY_LABELS = {
-  '3d': '3D Related',
-  graphic: 'Graphic Designer',
+  '3d': '3D',
+  graphic: 'Graphic Design',
   contests: 'Contest',
   games: 'Game',
   commissions: 'Commission',
+  '3dprint': '3D Printable',
+};
+
+/* ---------- Best Projects (best-projects.html) ----------
+   A short, hand-picked list for the "See my best projects" page.
+   References existing projects by "id" (same PROJECTS object above, so
+   there's nothing to duplicate or keep in sync) - each keeps its normal
+   link/behaviour (3D / Graphic Design tiles still route
+   through project.html, exactly as they do on the Work page).
+
+   BEST_PROJECTS_EXTRA is for the one exception: the UrbanEyePT Instagram
+   post isn't a standalone entry anywhere in PROJECTS (it's one of two
+   works shown inside the UrbanEyePT commission page), so it's listed
+   here directly with its own real link - kept identical to the link
+   used on that commission page (straight to Instagram, new tab). */
+const BEST_PROJECTS = {
+  '3d': ['3d-007', '3d-006', '3d-003'],
+  graphic: ['graphic-icon-library'],
+};
+const BEST_PROJECTS_EXTRA = {
+  '3d': [
+    {
+      title: 'UrbanEyePT - Instagram Post',
+      tags: ['3D Modelling'],
+      image: 'images/work/commissions/urbaneyept-mosaic.webp',
+      link: 'https://www.instagram.com/urbaneyept/',
+    },
+  ],
+  graphic: [],
 };
 
 const ICONS = {
@@ -104,111 +180,49 @@ document.querySelectorAll('.nav a').forEach((link) => {
 const yearEl = document.getElementById('year');
 if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-/* ---------- Remember last-viewed Work category ----------
-   Runs on every page. Any link pointing to work.html (e.g. every
-   "← Back to Work" link on a commission page, contest download, etc.)
-   automatically gets the last category the person was browsing appended
-   to it, so "Back to Work" always returns to where they actually were -
-   this applies to every current and future project detail page without
-   needing any extra setup on that page. */
-(function restoreBackToWorkLinks() {
+/* ---------- "Back" links always return to exactly where you were ----------
+   Runs on every page. Two separate things happen here:
+
+   1. The plain "Work" nav link (in the header, on every page) always
+      goes to the Work page itself, restoring whichever category tab was
+      last active there - it should never redirect to a different list
+      page like Best Projects.
+
+   2. Every "← Back to ..." link/button (marked with [data-smart-back] -
+      used on commission pages, project.html, and any future detail
+      page) returns to whichever list page the person actually arrived
+      from - the Work page (with its tab) OR the Best Projects page -
+      and its label updates to match ("Back to Work" / "Back to Best
+      Projects"). This applies automatically to any future page that
+      marks its own "back" links this way; no per-page setup needed. */
+(function restoreSmartBackLinks() {
   const savedCategory = sessionStorage.getItem('activeWorkCategory');
-  if (!savedCategory) return;
-  document.querySelectorAll('a[href="work.html"]').forEach((link) => {
-    link.href = `work.html?tab=${encodeURIComponent(savedCategory)}`;
+  if (savedCategory) {
+    document.querySelectorAll('a[href="work.html"]:not([data-smart-back])').forEach((link) => {
+      link.href = `work.html?tab=${encodeURIComponent(savedCategory)}`;
+    });
+  }
+
+  const lastPage = sessionStorage.getItem('lastListPage');
+  const lastLabel = sessionStorage.getItem('lastListLabel') || 'Work';
+  if (!lastPage) return;
+  document.querySelectorAll('[data-smart-back]').forEach((link) => {
+    link.href = lastPage;
+    link.textContent = link.textContent.replace(/Back to .+$/i, `Back to ${lastLabel}`);
   });
 })();
 
-/* ---------- Homepage: rotating project mosaic ----------
-   Pulls every project image already defined in PROJECTS above (no
-   separate list to maintain) and cycles each tile through a random one
-   every 5-7 seconds, with a slow crossfade. As soon as a new project is
-   added anywhere in PROJECTS, its cover image joins this rotation
-   automatically. No two tiles ever show the same project at the same
-   time, and a tile never repeats the image it's already showing.
-
-   Uses the small pre-generated thumbnail next to each full-size image
-   (images/.../thumbs/<same filename>) rather than the full grid/detail
-   version, since these tiles are small and this rotation loads several
-   images right away - keeps the homepage light, especially on mobile. */
+/* ---------- Shared helper: thumbnail path ----------
+   Every full-size image in PROJECTS has a matching small thumbnail next
+   to it (images/.../thumbs/<same filename>). Used by the Work page grid
+   for categories whose tiles render small, to keep pages light -
+   especially on mobile. */
 function toThumbPath(imagePath) {
   const parts = imagePath.split('/');
   const filename = parts.pop();
   parts.push('thumbs', filename);
   return parts.join('/');
 }
-
-(function homeGalleryRotation() {
-  const gallery = document.querySelector('[data-home-gallery]');
-  if (!gallery) return;
-
-  const seen = new Set();
-  const pool = [];
-  Object.values(PROJECTS).forEach((list) => {
-    list.forEach((project) => {
-      if (project.image && !seen.has(project.image)) {
-        seen.add(project.image);
-        pool.push({ src: toThumbPath(project.image), alt: project.title });
-      }
-    });
-  });
-
-  const tileEls = Array.from(gallery.querySelectorAll('[data-home-tile]'));
-  if (pool.length === 0) {
-    gallery.style.display = 'none';
-    return;
-  }
-
-  const FADE_MS = 900; // keep in sync with the .home-gallery-img transition duration
-
-  // Give every tile a different starting image where possible, and keep
-  // track of what each tile is currently showing so future rotations can
-  // avoid duplicating another tile's current image.
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  const current = tileEls.map((tile, i) => {
-    const pick = shuffled[i % shuffled.length];
-    const img = tile.querySelector('img');
-    img.src = pick.src;
-    img.alt = pick.alt;
-    return pick;
-  });
-
-  function pickNextFor(tileIndex) {
-    const ownSrc = current[tileIndex].src;
-    const shownElsewhere = current
-      .filter((_, i) => i !== tileIndex)
-      .map((p) => p.src);
-
-    // Ideal case: not the tile's own current image, and not currently
-    // shown by any other tile either.
-    let candidates = pool.filter((p) => p.src !== ownSrc && !shownElsewhere.includes(p.src));
-
-    // Not enough unique images to go around (more tiles than pool size) -
-    // fall back to just avoiding this tile's own current image.
-    if (candidates.length === 0) candidates = pool.filter((p) => p.src !== ownSrc);
-
-    // Only one image exists in total - nothing else to pick.
-    if (candidates.length === 0) candidates = pool;
-
-    return candidates[Math.floor(Math.random() * candidates.length)];
-  }
-
-  tileEls.forEach((tile, index) => {
-    const img = tile.querySelector('img');
-    function rotate() {
-      const next = pickNextFor(index);
-      current[index] = next;
-      img.style.opacity = '0';
-      setTimeout(() => {
-        img.src = next.src;
-        img.alt = next.alt;
-        img.style.opacity = '1';
-      }, FADE_MS);
-    }
-    // Random 5-7s on display per tile, staggered so they don't all flip together.
-    setInterval(rotate, 5000 + Math.random() * 2000);
-  });
-})();
 
 /* ---------- Work page: category tabs + tag search + gallery ---------- */
 const galleryGrid = document.querySelector('[data-gallery-grid]');
@@ -223,7 +237,7 @@ if (galleryGrid) {
   // Categories whose tiles open the shared project.html detail page
   // instead of linking straight out. Commissions is deliberately left
   // out - it already links to its own dedicated case-study page.
-  const DETAIL_PAGE_CATEGORIES = ['3d', 'graphic', 'contests', 'games'];
+  const DETAIL_PAGE_CATEGORIES = ['3d', 'graphic', 'contests', 'games', '3dprint'];
 
   const params = new URLSearchParams(window.location.search);
   const requestedCategory = params.get('tab');
@@ -296,9 +310,9 @@ if (galleryGrid) {
     return el;
   }
 
-  function matchesQuery(project, query) {
-    if (!query) return true;
-    return project.tags.some((tag) => tag.toLowerCase().includes(query));
+  function matchesQuery(project, terms) {
+    if (terms.length === 0) return true;
+    return terms.every((term) => project.tags.some((tag) => tag.toLowerCase().includes(term)));
   }
 
   // Rebuilds the search suggestions from whatever tags actually exist in
@@ -310,7 +324,7 @@ if (galleryGrid) {
     tagOptions.innerHTML = uniqueTags.map((tag) => `<option value="${tag}">`).join('');
     if (searchInput) {
       searchInput.placeholder = uniqueTags.length
-        ? `Search by tag - e.g. ${uniqueTags[0]}`
+        ? `Search by tag - e.g. ${uniqueTags[0]} (comma for more)`
         : 'Search by tag';
     }
   }
@@ -318,9 +332,13 @@ if (galleryGrid) {
   function renderGallery() {
     galleryGrid.classList.toggle('grid-full', FULL_WIDTH_CATEGORIES.includes(activeCategory));
     galleryGrid.innerHTML = '';
-    const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
+    const rawQuery = (searchInput ? searchInput.value : '').trim();
+    const terms = rawQuery
+      .split(',')
+      .map((term) => term.trim().toLowerCase())
+      .filter(Boolean);
     const allProjects = PROJECTS[activeCategory] || [];
-    const projects = allProjects.filter((project) => matchesQuery(project, query));
+    const projects = allProjects.filter((project) => matchesQuery(project, terms));
 
     if (allProjects.length === 0) {
       const empty = document.createElement('p');
@@ -333,7 +351,8 @@ if (galleryGrid) {
     if (projects.length === 0) {
       const empty = document.createElement('p');
       empty.className = 'gallery-empty';
-      empty.textContent = `No projects tagged "${searchInput.value.trim()}".`;
+      const tagList = terms.map((term) => `"${term}"`).join(', ');
+      empty.textContent = `No projects tagged ${tagList}.`;
       galleryGrid.appendChild(empty);
       return;
     }
@@ -350,6 +369,8 @@ if (galleryGrid) {
       tab.classList.add('active');
       activeCategory = tab.dataset.tab;
       sessionStorage.setItem('activeWorkCategory', activeCategory);
+      sessionStorage.setItem('lastListPage', `work.html?tab=${encodeURIComponent(activeCategory)}`);
+      sessionStorage.setItem('lastListLabel', 'Work');
       if (searchInput) searchInput.value = '';
       updateTagSuggestions(activeCategory);
       renderGallery();
@@ -363,6 +384,8 @@ if (galleryGrid) {
   // Reflect the restored category in the tab bar, then clean up the URL
   // so refreshing the page doesn't keep re-appending ?tab=...
   sessionStorage.setItem('activeWorkCategory', activeCategory);
+  sessionStorage.setItem('lastListPage', `work.html?tab=${encodeURIComponent(activeCategory)}`);
+  sessionStorage.setItem('lastListLabel', 'Work');
   tabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === activeCategory));
   if (requestedCategory) {
     window.history.replaceState({}, '', window.location.pathname);
@@ -387,6 +410,7 @@ if (galleryGrid) {
   const coverWrapEl = document.querySelector('[data-project-cover-wrap]');
   const coverEl = document.querySelector('[data-project-cover]');
   const descEl = document.querySelector('[data-project-description]');
+  const galleryEl = document.querySelector('[data-project-gallery]');
   const actionsEl = document.querySelector('[data-project-actions]');
   const backBtn = actionsEl.querySelector('a[href="work.html"]');
 
@@ -409,6 +433,7 @@ if (galleryGrid) {
     descEl.textContent = "This project doesn't exist, or may have moved. Head back to Work to find it.";
     coverWrapEl.style.display = 'none';
     skillsEl.style.display = 'none';
+    if (galleryEl) galleryEl.style.display = 'none';
     return;
   }
 
@@ -430,6 +455,22 @@ if (galleryGrid) {
     pill.textContent = tag;
     skillsEl.appendChild(pill);
   });
+
+  if (galleryEl) {
+    galleryEl.innerHTML = '';
+    const extraImages = found.images || [];
+    if (extraImages.length > 0) {
+      extraImages.forEach((src, i) => {
+        const item = document.createElement('div');
+        item.className = 'project-gallery-item';
+        item.innerHTML = `<img src="${src}" alt="${found.title} - image ${i + 2}" loading="lazy" decoding="async">`;
+        galleryEl.appendChild(item);
+      });
+      galleryEl.style.display = '';
+    } else {
+      galleryEl.style.display = 'none';
+    }
+  }
 
   descEl.textContent =
     found.description ||
@@ -463,4 +504,119 @@ if (galleryGrid) {
     viewBtn.innerHTML = `${ICONS.view} View PDF online`;
     actionsEl.insertBefore(viewBtn, backBtn);
   }
+})();
+
+/* ---------- Best Projects page (best-projects.html) ---------- */
+(function renderBestProjects() {
+  const threeDGrid = document.querySelector('[data-best-3d]');
+  if (!threeDGrid) return;
+
+  // So "← Back to ..." links on project.html (reached by clicking a tile
+  // here) return to this page instead of defaulting to the Work page.
+  sessionStorage.setItem('lastListPage', 'best-projects.html');
+  sessionStorage.setItem('lastListLabel', 'Best Projects');
+
+  const graphicGrid = document.querySelector('[data-best-graphic]');
+
+  const VARIANTS = ['gal-v1', 'gal-v2', 'gal-v3', 'gal-v4'];
+
+  function findById(id) {
+    let found = null;
+    Object.values(PROJECTS).forEach((list) => {
+      list.forEach((project) => {
+        if (project.id === id) found = project;
+      });
+    });
+    return found;
+  }
+
+  function buildBestTile({ title, tags, image, href, external }, index) {
+    const variant = VARIANTS[index % VARIANTS.length];
+    const el = document.createElement('a');
+    el.className = 'gallery-item';
+    el.href = href;
+    if (external) {
+      el.target = '_blank';
+      el.rel = 'noopener';
+    }
+    const visual = image
+      ? `<img class="gallery-img" src="${toThumbPath(image)}" alt="${title}" loading="lazy" decoding="async">`
+      : `<div class="gallery-visual ${variant}"><div class="gallery-shape"></div></div>`;
+    const caption = external ? 'View project ↗' : 'View details ↗';
+    el.innerHTML = `
+      ${visual}
+      <span class="gallery-tag">${tags.join(' · ')}</span>
+      <div class="gallery-caption"><h3>${title}</h3><p>${caption}</p></div>
+    `;
+    return el;
+  }
+
+  function renderSection(grid, category) {
+    if (!grid) return;
+    let index = 0;
+    (BEST_PROJECTS[category] || []).forEach((id) => {
+      const project = findById(id);
+      if (!project) return;
+      grid.appendChild(
+        buildBestTile(
+          {
+            title: project.title,
+            tags: project.tags,
+            image: project.image,
+            href: `project.html?id=${encodeURIComponent(project.id)}`,
+            external: false,
+          },
+          index++
+        )
+      );
+    });
+    (BEST_PROJECTS_EXTRA[category] || []).forEach((item) => {
+      grid.appendChild(
+        buildBestTile({ ...item, href: item.link, external: true }, index++)
+      );
+    });
+  }
+
+  renderSection(threeDGrid, '3d');
+  renderSection(graphicGrid, 'graphic');
+})();
+
+/* ---------- Project image lightbox ----------
+   On project.html, clicking the cover image or any image in the extra
+   gallery opens it larger in an overlay. Uses event delegation on
+   document so it works no matter when those images get added to the
+   page (they're inserted dynamically by renderProjectDetail above). */
+(function projectLightbox() {
+  const lightbox = document.querySelector('[data-lightbox]');
+  if (!lightbox) return;
+
+  const lightboxImg = lightbox.querySelector('[data-lightbox-img]');
+  const closeBtn = lightbox.querySelector('[data-lightbox-close]');
+
+  function openLightbox(src, alt) {
+    lightboxImg.src = src;
+    lightboxImg.alt = alt || '';
+    lightbox.classList.add('open');
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('click', (e) => {
+    const clickedImg = e.target.closest('[data-project-cover-wrap] img, .project-gallery-item img');
+    if (clickedImg) openLightbox(clickedImg.src, clickedImg.alt);
+  });
+
+  closeBtn.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+  });
 })();

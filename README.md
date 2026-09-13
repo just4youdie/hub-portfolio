@@ -1,38 +1,44 @@
-# Ruben Alves — Portfolio
+# Ruben Alves - Portfolio
 
-A dark, metallic, CGI-inspired portfolio in four pages. Your Spline scene
-runs as a darkened, full-page background on every page.
+A dark, metallic, CGI-inspired portfolio in several pages. Your Spline
+scene runs as a darkened, full-page background on every page.
 
 ## Pages
 
-- `index.html` — Home / hero, Spline scene as background, plus a
-  5-tile rotating mosaic on the right showing real project covers (see
-  "Homepage mosaic" below).
-- `work.html` — Five category tabs (3D related / Graphic Designer /
+- `index.html` - Home / hero, with two buttons: "Explore selected work"
+  (all categories) and "See my best projects" (a short curated list -
+  see `best-projects.html` below).
+- `work.html` - Six category tabs (3D / Graphic Design / 3D Printable /
   Contests / Commissions / Games). Each shows only the projects you've
-  added — no filler tiles — plus a search bar that filters by tag. Search
+  added - no filler tiles - plus a search bar that filters by tag. Search
   suggestions are built per-category from that category's own tags, so
   categories never share a keyword list.
-  - **3D related, Graphic Designer, Contests, Games**: clicking a tile
-    opens that project's page on `project.html` — a short description
-    plus its skill tags — with a "View full project" button that then
+  - **3D, Graphic Design, 3D Printable, Contests, Games**: clicking a tile
+    opens that project's page on `project.html` - a short description
+    plus its skill tags - with a "View full project" button that then
     sends people to the outside link (Rookies, ArtStation, itch.io, etc)
     in a new tab. Contests tiles are also full width, one per row.
   - **Commissions**: tiles link straight to their own dedicated
-    case-study page instead (richer than the generic template) — see
+    case-study page instead (richer than the generic template) - see
     "Commissions" below.
-- `project.html` — one shared, dynamic page for every 3D related /
-  Graphic Designer / Contests / Games project. It reads `?id=...` from
-  the URL and fills itself in from `PROJECTS` — see below.
-- `about.html` — Simple bio: location, availability, focus, and tools.
-- `contact.html` — CV download + contact + social links.
+- `project.html` - one shared, dynamic page for every 3D /
+  Graphic Design / 3D Printable / Contests / Games project. It reads
+  `?id=...` from the URL and fills itself in from `PROJECTS` - see below.
+  Clicking the cover image or any image in a project's extra gallery
+  opens it larger in a lightbox (click outside it, the ✕, or press Esc
+  to close).
+- `best-projects.html` - a short, hand-picked list of your strongest
+  work, split into just two sections (3D and Graphic Design), nothing
+  else - see "Best Projects page" below.
+- `about.html` - Simple bio: location, availability, focus, and tools.
+- `contact.html` - CV download + contact + social links.
 
-## Work page — adding your real projects
+## Work page - adding your real projects
 
 Open `script.js` and find the `PROJECTS` object right at the top of the
-file (it's shared by the homepage mosaic and `project.html` too, not just
-the Work page grids). Each category is a plain array — add, remove, or
-reorder entries and the grid updates to match exactly (no empty
+file (it's shared by `project.html` and `best-projects.html` too, not
+just the Work page grids). Each category is a plain array - add, remove,
+or reorder entries and the grid updates to match exactly (no empty
 placeholder tiles are ever generated beyond what you list).
 
 ```js
@@ -41,92 +47,128 @@ placeholder tiles are ever generated beyond what you list).
 ],
 ```
 
-- `id` — required for 3D related / Graphic Designer / Contests / Games (not
-  needed for Commissions). A short, unique, URL-safe slug with no spaces —
-  it's what `project.html?id=...` looks up. Just make sure it's not
+- `id` - required for 3D / Graphic Design / Contests / Games (not
+  needed for Commissions). A short, unique, URL-safe slug with no spaces -
+  it's what `project.html?id=...` looks up, and what `BEST_PROJECTS`
+  references (see "Best Projects page" below). Just make sure it's not
   already used by another project.
-- `title` — shown on the tile and on its detail page.
-- `tags` — an array of one or more tags. Shown as the badge on the tile
+- `title` - shown on the tile and on its detail page.
+- `tags` - an array of one or more tags. Shown as the badge on the tile
   and again as "skills applied" chips on the detail page, and used by the
-  search bar to filter results within that category. Each category
-  builds its own search suggestions automatically from whatever tags its
-  projects use. Current 3D related vocabulary: `3D Modelling`,
-  `3D Animation`, `Detail`, `Environment`, `Nature`, `Interior`,
-  `Game Asset`.
-- `description` — shown on the project's detail page, under the cover
+  search bar to filter results within that category - the search box
+  accepts multiple, comma-separated tags at once (see "Multi-tag search"
+  below). Each category builds its own search suggestions automatically
+  from whatever tags its projects use. Current 3D vocabulary:
+  `3D Modelling`, `3D Animation`, `Detail`, `Environment`, `Nature`,
+  `Interior`, `Game Asset`, `University Work`.
+- `description` - shown on the project's detail page, next to the cover
   image. Bracketed placeholder text (`[...]`) means "write the real thing
-  whenever you have it" — several 3D related projects still have these
+  whenever you have it" - several 3D projects still have these
   since only you know the actual brief/process for each one.
-- `link` — the "View full project" destination on the detail page (always
+- `link` - the "View full project" destination on the detail page (always
   opens in a **new tab**, since it's meant to send people to the more
-  detailed version elsewhere — ArtStation, Rookies, itch.io, etc). Leave
+  detailed version elsewhere - ArtStation, Rookies, itch.io, etc). Leave
   it as `''` and that button is simply left out; the description/skills
   still show on their own. (For Commissions, `link` instead points
-  directly at that commission's own page — see below.)
-- `image` — path to the cover image relative to the site root (e.g.
+  directly at that commission's own page - see below.)
+- `image` - path to the cover image relative to the site root (e.g.
   `images/work/3d/project-001.jpg`). Leave it as `''` to show a placeholder
   tile until you have a real image.
-- `fit` — optional. Set to `'contain'` for a cover image that shouldn't be
+- `images` - optional array of extra image paths, shown in a small
+  gallery grid on the project's detail page (below the cover/
+  description). Use this for a project with more than one worthwhile
+  shot - e.g. Exposição - Telefones do Mundo shows a day and night
+  render of two different views. Only `image` (the single cover) shows
+  on the grid tile; the rest only appear once you click through. Every
+  image here and the main cover are clickable - clicking either opens a
+  full-size lightbox view (see "Image lightbox" below).
+- `fit` - optional. Set to `'contain'` for a cover image that shouldn't be
   cropped at all (e.g. a wordmark or banner with its own padding, like
   Jorge's cover). Leave it out for normal photo/render covers, which crop
-  to fill as usual — this applies on both the grid tile and its detail page.
-- `downloadUrl` / `viewUrl` — optional. Set either (or both) to add extra
+  to fill as usual - this applies on both the grid tile and its detail page.
+- `downloadUrl` / `viewUrl` - optional. Set either (or both) to add extra
   buttons on the project's detail page: one to download a file directly,
   one to open a link (e.g. a PDF preview) in a new tab. Used on Jorge to
   offer its descriptive-memory PDF alongside the itch.io link.
 
 If a category's array is empty, the Work page shows a simple "Projects
 coming soon" message instead of a blank grid. `graphic` and `games` are
-sparse/empty for now — add entries the same way once you have work to
+sparse/empty for now - add entries the same way once you have work to
 show there.
 
-**3D related** is already populated with your 7 Rookies projects and their
-cover images (in `images/work/3d/`), resized and compressed for the web.
-5 of them (001, 002, 003, 006, 007) now have real titles, descriptions,
-and skill tags pulled directly from what you wrote on each Rookies page.
-Project 004 and 005 don't have a Rookies link yet, so their descriptions
-are still placeholder text — fill those in (and give them a `link`) once
-they're posted.
+**3D** now has 8 projects and their cover images (in `images/work/3d/`),
+resized and compressed for the web. 5 of the original 7 (001, 002, 003,
+006, 007) have real titles, descriptions, and skill tags pulled directly
+from what you wrote on each Rookies page; project 008 (Exposição -
+Telefones do Mundo) is a university project with its own 4-image set (1
+cover + 3 in its gallery) and no outside link. Project 004 and 005 don't
+have a Rookies link yet, so their descriptions are still placeholder text
+- fill those in (and give them a `link`) once they're posted.
 
-**Contests** has one real entry, Jorge (Micro Jam 017: Islands) — full
+**3D Printable** is a new category for physical/3D-printed objects,
+separate from the render-only work in **3D**. It has one real entry,
+Mystery Box - Mystery Travel, a university project (team: João Teixeira
+and Tiago Crispim) - a 3-photo set (1 cover + 2 in its gallery), tagged
+"3D Printing" and "University Work", with the project's full PDF report
+(in `files/`) attached via `downloadUrl`.
+
+**Contests** has one real entry, Jorge (Micro Jam 017: Islands) - full
 width on the grid, tagged "Game Jam!", with a real description already
 written from your game jam memory document, linking to `fmag.itch.io/jorge`
 plus its descriptive-memory PDF (in `files/`) via `downloadUrl`/`viewUrl`.
 
-## Homepage mosaic
+## Image lightbox
 
-The 5 tiles on the right of the homepage hero automatically pull from
-every cover image in `PROJECTS` (across all categories) - there's no
-separate list to maintain. They're laid out as a loose, overlapping
-collage rather than a strict grid - varied sizes, slight rotations, one
-circular tile - each with a gentle floating idle animation, so it doesn't
-read as a rigid box of squares. Each tile independently swaps to a new
-random image every 5-7 seconds with a slow crossfade, staggered per tile
-so they don't all flip at once.
+On `project.html`, clicking the cover image or any image in a project's
+extra gallery (`images` field) opens it larger in a full-screen overlay -
+close it by clicking outside the image, the ✕ button, or pressing Esc.
+This is handled once, globally, in `script.js` (`projectLightbox()`)
+using event delegation, so it automatically applies to every current and
+future project - no per-project setup needed, and it keeps working even
+though those images are inserted dynamically after the page loads.
 
-- A tile never repeats the image it's already showing, and no two tiles
-  ever display the same project at the same time - every rotation always
-  picks something genuinely different from what's currently on screen
-  (its own and every other tile's). That same image is still free to come
-  back around later once others have had their turn.
-- The mosaic loads small, pre-generated thumbnails (see "Image sizes and
-  formats" below), not the full grid/detail images - it's the one place
-  on the site that shows several images immediately, so keeping those
-  particular files tiny matters most here.
-- If a project's `image` is `''` (no cover yet), it's simply excluded
-  from the rotation.
-- If there are no images anywhere in `PROJECTS` yet, the whole mosaic
-  hides itself rather than showing blank tiles.
-- The mosaic is decorative (not clickable, and marked `aria-hidden` for
-  screen readers) - its job is just to prove there's real work behind the
-  "Explore selected work" button. Send people to Work for the actual,
-  clickable gallery.
-- Layout (position/size/rotation per tile) lives in `styles.css` under
-  `.home-gallery-item:nth-child(...)`. Timing lives in `script.js` inside
-  `homeGalleryRotation()`: `FADE_MS` controls the crossfade length (keep
-  it matched to the CSS transition duration on `.home-gallery-img`), and
-  the `setInterval(rotate, 5000 + Math.random() * 2000)` line controls how
-  long each image stays on screen.
+## Multi-tag search
+
+The Work page search box accepts more than one tag at once - separate
+them with a comma (e.g. `3D Modelling, Detail`) and it only shows
+projects that have **all** of those tags, not just any one of them. This
+is implemented in `matchesQuery()` in `script.js`. One small limitation
+worth knowing: the tag-suggestion dropdown (native browser autocomplete)
+only matches against the very start of what you've typed, so it stops
+offering suggestions once you type a comma and start a second tag - you
+can still type the rest by hand, it just won't autocomplete.
+
+## Best Projects page
+
+`best-projects.html` is a short, curated shortcut to your strongest work
+- no tabs, no search, just two labelled sections (3D, then Graphic
+Design) with larger, 2-column tiles so there's more to look at per
+project. It's linked from the homepage's "See my best projects" button
+and isn't in the main nav - it's meant to feel like a special shortcut,
+not another everyday page.
+
+The list lives in `script.js`, just above the `renderProjectDetail`
+function:
+
+```js
+const BEST_PROJECTS = {
+  '3d': ['3d-007', '3d-006', '3d-003'],
+  graphic: ['graphic-icon-library'],
+};
+```
+
+Each entry is just an `id` from `PROJECTS` - nothing is duplicated, so
+editing a project's title/image/description once updates it everywhere,
+including here. To change the picks, edit these two arrays (order = the
+order tiles appear in). Clicking a tile behaves exactly like it does on
+the Work page - same link, same destination.
+
+One exception: **`BEST_PROJECTS_EXTRA`**, right below it, is for the
+UrbanEyePT Instagram post - it isn't a standalone entry in `PROJECTS`
+(it's one of two works shown inside the UrbanEyePT commission page), so
+it's listed here directly with its own title/image/link instead of an
+`id`. Its link goes straight to Instagram, same as it does on the
+commission page - not through `project.html`.
 
 ## Image sizes and formats
 
@@ -134,21 +176,24 @@ Every cover image ships as WebP (smaller than the original JPEG/PNG at
 the same visual quality) in two sizes:
 
 - `images/.../project-name.webp` - the full-size version (up to 1400px
-  wide), used on Work page grid tiles and the project detail page.
+  wide), used on the project detail page, and on grid tiles for
+  full-width categories (Contests) where tiles can render quite large.
 - `images/.../thumbs/project-name.webp` - a small version (up to 640px
-  wide) with the exact same filename, used only by the homepage mosaic.
+  wide) with the exact same filename, used on every other grid tile
+  (Work page's 3-column categories, Commissions, and Best Projects) -
+  those never render large enough to need the full-size file.
   `toThumbPath()` in `script.js` derives this path automatically from
   `image`, so you never set it separately - just make sure a `thumbs/`
   version with a matching filename exists alongside the full one.
 
-Work page grid images also load with `loading="lazy"` so they don't
-download until they're about to scroll into view. When adding a new
-project image, run it through the same resize/compress step (both sizes,
-WebP) rather than dropping in an original photo/render straight from
-Blender or Photoshop - those are typically many megabytes and will make
-the site noticeably heavier, especially on mobile connections.
+Grid images also load with `loading="lazy"` so they don't download until
+they're about to scroll into view. When adding a new project image, run
+it through the same resize/compress step (both sizes, WebP) rather than
+dropping in an original photo/render straight from Blender or Photoshop -
+those are typically many megabytes and will make the site noticeably
+heavier, especially on mobile connections.
 
-## "Wave" CTA styling
+## "Wave" CTA and the featured button
 
 The homepage's "Explore selected work" button and the "Download CV" link
 in the header (on every page) share a `wave-cta` modifier class: fully
@@ -160,26 +205,42 @@ the site is unaffected. Colours and timing are set in `styles.css` under
 `.button.wave-cta,.nav-cv.wave-cta` and the `waveFlow` keyframes (currently
 a 14s ease-in-out loop). It respects `prefers-reduced-motion`.
 
-## Returning to the exact category you were browsing
+"See my best projects" uses a different modifier, `button-feature`: a
+charcoal/navy glass panel with a slow breathing navy glow (`featurePulse`
+in `styles.css`) instead of a moving shimmer - deliberately distinct from
+`wave-cta` so it reads as its own, separate kind of call-to-action, while
+still using the site's existing palette (charcoal + the navy accent
+colour used sparingly elsewhere). Also opt-in, also respects
+`prefers-reduced-motion`.
 
-Every "← Back to Work" link on every project page (`project.html`,
-commission pages, and any future internal page) automatically returns to
-the exact category tab you were on — not just the Work page in general.
-This is handled once, globally, in `script.js`:
+## "Back" links always return to exactly where you were
 
-- Whenever a tab is clicked, its key (e.g. `commissions`) is saved to
-  `sessionStorage`.
-- Any link on any page pointing to plain `work.html` gets that saved
-  category appended (`work.html?tab=commissions`) automatically before
-  the person can click it.
-- `work.html` itself reads `?tab=...` on load and opens directly on that
-  category.
+Every "← Back to ..." link/button on every detail page (`project.html`,
+commission pages, and any future page) returns to whichever list page
+the person actually came from - the Work page, with the exact tab they
+had open, **or** the Best Projects page - not just "Work" by default.
+This is handled once, globally, in `script.js`, and the button's own
+label updates too ("Back to Work" / "Back to Best Projects").
 
-Because this is automatic, you don't need to do anything extra when
-adding a new project or project page — just link back with a plain
-`href="work.html"` and it will resolve to the right category on its own.
+How it works:
 
-## Commissions — adding a case study
+- `work.html` and `best-projects.html` are the two "list" pages. Each one
+  saves its own identity to `sessionStorage` as soon as it loads (or a
+  tab is switched, on Work) - a page to return to (e.g.
+  `work.html?tab=commissions`) and a label to show (e.g. `Work`).
+- Any element marked `data-smart-back` (every existing "← Back to Work"
+  link and button already has this) gets its `href` and visible label
+  rewritten to match whichever list page was saved most recently.
+- The plain "Work" link in the header nav is deliberately **not** marked
+  `data-smart-back` - it always goes to the Work page itself (restoring
+  its last tab), never to Best Projects, since it's a permanent nav item
+  rather than a "return to where I was" action.
+
+Because this is automatic, adding a new detail page just means linking
+back with `href="work.html" data-smart-back` (as the existing templates
+already do) - no extra setup needed for it to resolve correctly.
+
+## Commissions - adding a case study
 
 Each commission gets its own page on the site (not an outside link), so
 people can browse it without leaving your portfolio, and can always get
@@ -187,14 +248,14 @@ back to Work/About/Contact from the same header.
 
 Two templates are available:
 
-- **`commission-template.html`** — single work, one cover image.
-- **`commission-template-multi.html`** — several works shown on one
+- **`commission-template.html`** - single work, one cover image.
+- **`commission-template-multi.html`** - several works shown on one
   client page, each linking wherever you like (used for UrbanEyePT below).
 
 1. Duplicate whichever template fits, rename it (e.g.
    `commission-acme.html`), and open it.
 2. Replace every `[BRACKETED]` placeholder: client name (used in the page
-   heading and title only — the badge under it shows just the logo, no
+   heading and title only - the badge under it shows just the logo, no
    repeated text), logo, cover image(s), description, and links.
 3. Put the client's logo and cover image(s) in
    `images/work/commissions/`.
@@ -207,7 +268,7 @@ commissions: [
 ],
 ```
 
-Note `link` is just the filename (no `https://`) — that's what makes the
+Note `link` is just the filename (no `https://`) - that's what makes the
 work-page tile open it as an internal page instead of a new tab.
 
 Every commission page keeps the full site header/nav plus an explicit
@@ -215,10 +276,10 @@ Every commission page keeps the full site header/nav plus an explicit
 up stuck on a page with no way back.
 
 **UrbanEyePT** is already set up as a real example
-(`commission-urbaneyept.html`) using the multi-work template — it shows
+(`commission-urbaneyept.html`) using the multi-work template - it shows
 the Icon Library (linking to Behance) and an Instagram post render
 (linking to Instagram) side by side under the UrbanEyePT logo. The Icon
-Library also appears on its own under **Graphic Designer**, using the
+Library also appears on its own under **Graphic Design**, using the
 same image and link.
 
 ## Before publishing
@@ -228,19 +289,33 @@ same image and link.
 3. Double check the social links in `contact.html` match your current
    profiles.
 
-The CI enforces the first point: until `cv.pdf` exists, deploys are blocked
-(it's linked from every page).
-
 ## Spline background
 
 Each page includes the same block:
 
 ```html
 <div class="spline-bg" aria-hidden="true">
-  <spline-viewer url="YOUR_SPLINE_SCENE_URL"></spline-viewer>
   <div class="spline-scrim"></div>
 </div>
 ```
+
+Note there's no `<spline-viewer>` element in the HTML itself anymore -
+`initSplineBackground()` at the very top of `script.js` inserts it (and
+loads the Spline script) only when the visitor is on a screen wider than
+850px **and** hasn't asked their OS/browser for reduced motion. On
+mobile, or with reduced motion on, that function returns early and does
+nothing - no script download, no scene fetch, no WebGL canvas at all.
+What's left is just the flat dark background plus the `.spline-scrim`
+gradient overlay, which was already designed to look intentional on its
+own rather than like a fallback.
+
+This was a deliberate performance choice: a live 3D WebGL scene is
+easily the single heaviest thing on this site, and phones feel that cost
+far more than desktops do (battery drain, jank, weaker GPUs). If you
+ever want the interactive scene on mobile too, delete the
+`isSmallScreen` check in `initSplineBackground()` - the URL and darkening
+filter live in the same function/`.spline-bg spline-viewer` CSS rule as
+before.
 
 Darkened via a CSS `filter` on the viewer plus a dark gradient overlay
 (`.spline-scrim`) in `styles.css`, so page text stays readable.
@@ -252,39 +327,7 @@ All four pages are responsive: safe-area padding for notched phones,
 content, a full-width tap-friendly nav drawer, and a gallery grid that
 drops from 3 → 2 → 1 columns as the screen narrows.
 
-## Publishing & CI
+## Publishing
 
-Live at **https://rubenalvesportefolio.github.io**, deployed by GitHub
-Actions from the `main` branch. There is no build step for the site itself -
-`npm` is only used for the checks.
-
-**How a change goes live:** push to `main` (or merge a PR) → the **Site**
-workflow copies the publishable files into `_site/` (everything except what's
-listed in `.deployignore` - README, templates, tooling), validates that
-folder, and only if it passes deploys it and smoke-tests the live URL.
-If a check fails, nothing is deployed and the previous version stays up.
-
-**What gets checked on every push / PR** (`npm run validate` runs the same
-thing locally - needs Node 20+ and `npm install` once):
-
-- Every local link and image on every page resolves (e.g. a missing `cv.pdf`).
-- `script.js` has no syntax errors, and every `PROJECTS` entry is sane:
-  unique URL-safe `id`, existing `image` **and** its `thumbs/` twin,
-  existing `downloadUrl` files, commission `link`s pointing at real pages,
-  typo'd field names flagged.
-- Image budgets: full-size covers ≤ 400 KB, thumbnails ≤ 120 KB (tune in
-  `BUDGET` at the top of `scripts/validate-site.mjs`).
-- No leftover `[BRACKETED]` template placeholders on published pages.
-- Standard HTML validity (`html-validate`, config in `.htmlvalidate.json`).
-- Warnings only (never block): placeholder project descriptions, the
-  Instagram link pointing at instagram.com itself, unused images.
-
-**Weekly:** the **External links** workflow checks every outside link
-(Rookies, itch.io, Behance, the Spline scene...) and fails if one has died.
-Instagram and LinkedIn block automated checkers, so check those by hand.
-
-**Preview locally:** `npm run serve` builds `_site/` and opens it at
-http://localhost:8080.
-
-Keep all site files in the repo root (subfolders like `images/` are fine).
-A new file is published automatically unless it matches `.deployignore`.
+Static site - host on GitHub Pages, Netlify, Vercel, Cloudflare Pages, or
+any normal web host. Keep all files in the same folder.
