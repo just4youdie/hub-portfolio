@@ -18,8 +18,11 @@ const BUDGET = {
   fileMB: 10,    // anything else (e.g. PDFs in files/) - warning only
 };
 const KNOWN_PROJECT_KEYS = new Set([
-  'id', 'title', 'tags', 'link', 'image', 'description', 'fit', 'downloadUrl', 'viewUrl',
+  'id', 'title', 'tags', 'link', 'image', 'images', 'description', 'fit', 'downloadUrl', 'viewUrl', 'i18n',
 ]);
+// The only per-project fields worth translating - tags are shared
+// vocabulary and live in i18n.js instead.
+const TRANSLATABLE_PROJECT_KEYS = new Set(['title', 'description']);
 const EXTERNAL = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i; // http:, mailto:, data:, //cdn...
 const PLACEHOLDER_HTML = /\[(?:[A-Z][A-Za-z0-9 '&.-]{1,60}|https?:\/\/[^\]\s]+)\]/g;
 const PLACEHOLDER_TEXT = /\[[^\]]{3,}\]/;
@@ -55,6 +58,8 @@ const files = new Set();
 const read = (rel) => readFileSync(path.join(SITE, rel), 'utf8');
 const sizeKB = (rel) => statSync(path.join(SITE, rel)).size / 1024;
 const referenced = new Set();
+// key -> first place it's used, so a missing translation can be pointed at.
+const i18nUsage = new Map();
 
 // Resolve a local URL (relative to `fromFile`) to a site-relative path.
 function resolveLocal(url, fromFile) {
@@ -92,9 +97,144 @@ for (const page of pages) {
   for (const m of html.matchAll(PLACEHOLDER_HTML)) {
     report('error', page, lineAt(html, m.index), `Unreplaced template placeholder ${m[0]}.`);
   }
+
+  // --- Translation wiring (see i18n.js) ---
+  for (const m of html.matchAll(/\bdata-i18n\s*=\s*"([^"]*)"/g)) {
+    const key = m[1].trim();
+    const line = lineAt(html, m.index);
+    if (!key) report('error', page, line, 'data-i18n is empty - it needs a translation key.');
+    else if (!i18nUsage.has(key)) i18nUsage.set(key, { file: page, line });
+  }
+  for (const m of html.matchAll(/\bdata-i18n-attr\s*=\s*"([^"]*)"/g)) {
+    const line = lineAt(html, m.index);
+    for (const entry of m[1].split(';')) {
+      const pair = entry.trim();
+      if (!pair) continue;
+      const parts = pair.split(':').map((part) => part.trim());
+      if (parts.length !== 2 || !parts[0] || !parts[1]) {
+        report('error', page, line, `data-i18n-attr entry "${pair}" must look like "attribute:key".`);
+        continue;
+      }
+      if (!i18nUsage.has(parts[1])) i18nUsage.set(parts[1], { file: page, line });
+    }
+  }
+
+  // A page that forgets i18n.js silently ships in English only.
+  const i18nTag = html.indexOf('src="i18n.js"');
+  const scriptTag = html.indexOf('src="script.js"');
+  if (i18nTag === -1) {
+    report('error', page, undefined, 'page never loads i18n.js, so none of its copy can be translated.');
+  } else if (scriptTag !== -1 && i18nTag > scriptTag) {
+    report('error', page, lineAt(html, i18nTag), 'i18n.js must be loaded before script.js (script.js calls I18N.t at startup).');
+  }
+  if (!html.includes('class="lang-switch"')) {
+    report('error', page, undefined, 'page has no .lang-switch in its header, so visitors cannot change language from it.');
+  }
 }
 
-// ---- 2. script.js: syntax + PROJECTS data ----------------------------------------
+// ---- 2. i18n.js: the language dictionaries ------------------------------------
+// The site is translated in the browser, so a key that only exists in one
+// language shows up as raw "some.key" on the page. These checks make that a
+// build failure instead of something a visitor discovers.
+const I18N_FILE = 'i18n.js';
+let TRANSLATIONS = null;
+let TAG_TRANSLATIONS = null;
+let LOCALES = [];
+let DEFAULT_LOCALE = 'en';
+
+// Placeholders like {tag} are filled in at runtime; if one language drops
+// one, that language shows a literal "{tag}" to the visitor.
+const placeholdersIn = (text) => [...String(text).matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(',');
+
+
+if (!files.has(I18N_FILE)) {
+  report('error', I18N_FILE, undefined, 'i18n.js is missing - every page loads it.');
+} else {
+  const src = read(I18N_FILE);
+  try {
+    new vm.Script(src, { filename: I18N_FILE });
+  } catch (e) {
+    const line = Number((e.stack.match(/i18n\.js:(\d+)/) || [])[1]) || undefined;
+    report('error', I18N_FILE, line, `JavaScript syntax error: ${e.message}`);
+  }
+
+  const languages = (src.match(/const SUPPORTED_LANGUAGES\s*=\s*(\[[^\]]*\])/) || [])[1];
+  const fallback = (src.match(/const DEFAULT_LANGUAGE\s*=\s*'([^']+)'/) || [])[1];
+  if (!languages) {
+    report('error', I18N_FILE, undefined, 'Could not find `const SUPPORTED_LANGUAGES = [ ... ]`.');
+  } else {
+    try {
+      LOCALES = vm.runInNewContext(languages, {}, { timeout: 1000 });
+    } catch (e) {
+      report('error', I18N_FILE, lineOf(src, 'SUPPORTED_LANGUAGES'), `SUPPORTED_LANGUAGES could not be read: ${e.message}`);
+    }
+  }
+  if (fallback) DEFAULT_LOCALE = fallback;
+  if (LOCALES.length && !LOCALES.includes(DEFAULT_LOCALE)) {
+    report('error', I18N_FILE, lineOf(src, 'DEFAULT_LANGUAGE'), `DEFAULT_LANGUAGE "${DEFAULT_LOCALE}" isn't one of SUPPORTED_LANGUAGES.`);
+  }
+
+  const literal = extractObjectLiteral(src, 'const TRANSLATIONS =');
+  if (!literal) {
+    report('error', I18N_FILE, undefined, 'Could not find the `const TRANSLATIONS = { ... }` block.');
+  } else {
+    try {
+      TRANSLATIONS = vm.runInNewContext(`(${literal})`, {}, { timeout: 1000 });
+    } catch (e) {
+      report('error', I18N_FILE, lineOf(src, 'const TRANSLATIONS'), `TRANSLATIONS could not be evaluated: ${e.message}`);
+    }
+  }
+
+  if (TRANSLATIONS) checkTranslations(TRANSLATIONS, src);
+
+  // A tag renamed in script.js leaves a translation behind that silently
+  // stops applying, so stale entries are worth flagging.
+  const tagLiteral = extractObjectLiteral(src, 'const TAG_TRANSLATIONS =');
+  if (tagLiteral) {
+    try {
+      TAG_TRANSLATIONS = vm.runInNewContext(`(${tagLiteral})`, {}, { timeout: 1000 });
+    } catch (e) {
+      report('error', I18N_FILE, lineOf(src, 'const TAG_TRANSLATIONS'), `TAG_TRANSLATIONS could not be evaluated: ${e.message}`);
+    }
+  }
+}
+
+function checkTranslations(dictionaries, src) {
+  const missingLocale = LOCALES.filter((locale) => !dictionaries[locale]);
+  for (const locale of missingLocale) {
+    report('error', I18N_FILE, undefined, `TRANSLATIONS has no "${locale}" block, but it's in SUPPORTED_LANGUAGES.`);
+  }
+  const present = LOCALES.filter((locale) => dictionaries[locale]);
+  if (!present.length) return;
+
+  const reference = present.includes(DEFAULT_LOCALE) ? DEFAULT_LOCALE : present[0];
+  const referenceKeys = Object.keys(dictionaries[reference]);
+
+  for (const locale of present) {
+    const dict = dictionaries[locale];
+    for (const [key, value] of Object.entries(dict)) {
+      if (typeof value !== 'string' || !value.trim()) {
+        report('error', I18N_FILE, lineOf(src, `'${key}'`), `${locale}."${key}" must be a non-empty string.`);
+      }
+    }
+    if (locale === reference) continue;
+
+    for (const key of referenceKeys) {
+      if (!(key in dict)) {
+        report('error', I18N_FILE, lineOf(src, `'${key}'`), `"${key}" is missing from the "${locale}" translations (it exists in "${reference}").`);
+      } else if (placeholdersIn(dict[key]) !== placeholdersIn(dictionaries[reference][key])) {
+        report('error', I18N_FILE, lineOf(src, `'${key}'`), `${locale}."${key}" doesn't use the same {placeholders} as ${reference}.`);
+      }
+    }
+    for (const key of Object.keys(dict)) {
+      if (!(key in dictionaries[reference])) {
+        report('error', I18N_FILE, lineOf(src, `'${key}'`), `"${key}" only exists in "${locale}" - add it to "${reference}" too, or remove it.`);
+      }
+    }
+  }
+}
+
+// ---- 3. script.js: syntax + PROJECTS data ----------------------------------------
 const SCRIPT = 'script.js';
 let PROJECTS = null;
 if (!files.has(SCRIPT)) {
@@ -106,6 +246,12 @@ if (!files.has(SCRIPT)) {
   } catch (e) {
     const line = Number((e.stack.match(/script\.js:(\d+)/) || [])[1]) || undefined;
     report('error', SCRIPT, line, `JavaScript syntax error: ${e.message}`);
+  }
+
+  // Keys reached through I18N.t('...') rather than a data-i18n attribute.
+  for (const m of src.matchAll(/\bt\(\s*'([^']+)'/g)) {
+    const key = m[1];
+    if (!i18nUsage.has(key)) i18nUsage.set(key, { file: SCRIPT, line: lineAt(src, m.index) });
   }
 
   const literal = extractObjectLiteral(src, 'const PROJECTS =');
@@ -127,7 +273,13 @@ function checkProjects(projects, src) {
   const workHtml = files.has('work.html') ? read('work.html') : '';
   const tabs = new Set([...workHtml.matchAll(/data-tab="([^"]+)"/g)].map((m) => m[1]));
 
+  const usedTags = new Set();
+
   for (const [category, list] of Object.entries(projects)) {
+    // project.html labels a project with its category, via I18N.t('cat.<category>').
+    const categoryKey = `cat.${category}`;
+    if (!i18nUsage.has(categoryKey)) i18nUsage.set(categoryKey, { file: SCRIPT, line: lineOf(src, `${category}:`) });
+
     if (workHtml && !tabs.has(category)) {
       report('warning', 'work.html', undefined, `PROJECTS has a "${category}" category but work.html has no data-tab="${category}" button, so it can't be opened.`);
     }
@@ -147,6 +299,42 @@ function checkProjects(projects, src) {
       for (const k of Object.keys(p)) if (!KNOWN_PROJECT_KEYS.has(k)) warn(`unknown field "${k}" (typo?) - it will be ignored.`);
       if (typeof p.title !== 'string' || !p.title.trim()) err('missing "title".');
       if (!Array.isArray(p.tags) || p.tags.length === 0) warn('has no tags, so search can never find it.');
+      else p.tags.forEach((tag) => usedTags.add(tag));
+
+      // Translated title/description, if any - see i18n.js for the UI copy.
+      if (p.i18n !== undefined) {
+        if (!p.i18n || typeof p.i18n !== 'object' || Array.isArray(p.i18n)) {
+          err('"i18n" must be an object keyed by language code, e.g. { pt: { title: ... } }.');
+        } else {
+          for (const [locale, fields] of Object.entries(p.i18n)) {
+            if (LOCALES.length && !LOCALES.includes(locale)) {
+              err(`i18n has a "${locale}" block, which isn't in SUPPORTED_LANGUAGES (${LOCALES.join(', ')}).`);
+              continue;
+            }
+            if (!fields || typeof fields !== 'object' || Array.isArray(fields)) {
+              err(`i18n.${locale} must be an object of translated fields.`);
+              continue;
+            }
+            for (const [field, value] of Object.entries(fields)) {
+              if (!TRANSLATABLE_PROJECT_KEYS.has(field)) {
+                warn(`i18n.${locale}.${field} isn't translatable (only ${[...TRANSLATABLE_PROJECT_KEYS].join('/')}) - it will be ignored.`);
+              } else if (typeof value !== 'string' || !value.trim()) {
+                err(`i18n.${locale}.${field} must be a non-empty string.`);
+              }
+            }
+            if (typeof fields.description === 'string' && PLACEHOLDER_TEXT.test(fields.description)) {
+              warn(`i18n.${locale} description is still placeholder text - visitors reading ${locale} will see it.`);
+            }
+          }
+        }
+      }
+      // English prose with no translation falls back to English on screen.
+      for (const locale of LOCALES) {
+        if (locale === DEFAULT_LOCALE || !p.description) continue;
+        if (!p.i18n || !p.i18n[locale] || !p.i18n[locale].description) {
+          warn(`has no "${locale}" description, so it stays in ${DEFAULT_LOCALE} when the site is read in ${locale}.`);
+        }
+      }
 
       // id - required everywhere except commissions, must be unique + URL-safe
       if (!isCommission) {
@@ -176,6 +364,25 @@ function checkProjects(projects, src) {
         if (!files.has(thumb)) err(`missing thumbnail "${thumb}" (same filename, inside a thumbs/ folder).`);
         if (!/\.(webp|svg)$/i.test(img)) warn(`image "${p.image}" isn't WebP - convert it to keep pages light.`);
       }
+      // Extra shots on the detail page: shown as small tiles (thumb) that
+      // zoom to the full-size file, so both sizes have to be there.
+      if (p.images !== undefined) {
+        if (!Array.isArray(p.images)) {
+          err('"images" must be an array of image paths.');
+        } else {
+          p.images.forEach((src, n) => {
+            if (typeof src !== 'string' || !src.trim()) return err(`images[${n}] must be a path.`);
+            const img = resolveLocal(src, SCRIPT);
+            const thumb = img.replace(/\/([^/]+)$/, '/thumbs/$1');
+            referenced.add(img);
+            referenced.add(thumb);
+            if (!files.has(img)) err(`images[${n}] "${src}" doesn't exist.`);
+            if (!files.has(thumb)) err(`images[${n}] is missing thumbnail "${thumb}" (same filename, inside a thumbs/ folder).`);
+            if (!/\.(webp|svg)$/i.test(img)) warn(`images[${n}] "${src}" isn't WebP - convert it to keep pages light.`);
+            return undefined;
+          });
+        }
+      }
       if (p.fit && !['contain', 'cover'].includes(p.fit)) warn(`fit "${p.fit}" isn't 'contain' or 'cover'.`);
 
       for (const key of ['downloadUrl', 'viewUrl']) {
@@ -191,9 +398,52 @@ function checkProjects(projects, src) {
       }
     });
   }
+
+  // A tag translation whose English side no longer exists never applies.
+  for (const [locale, dict] of Object.entries(TAG_TRANSLATIONS || {})) {
+    for (const tag of Object.keys(dict)) {
+      if (!usedTags.has(tag)) {
+        report('warning', I18N_FILE, undefined, `TAG_TRANSLATIONS.${locale} translates "${tag}", but no project uses that tag (renamed or removed?).`);
+      }
+    }
+  }
 }
 
-// ---- 3. Asset weight + orphans ------------------------------------------------
+// ---- 4. Used keys vs defined keys ----------------------------------------------
+// Section 2 checked the languages agree with each other; this checks they
+// agree with the pages. A key used but never defined renders as raw
+// "some.key" on screen, so it's an error; the reverse is just dead weight.
+if (TRANSLATIONS) {
+  const locales = LOCALES.filter((locale) => TRANSLATIONS[locale]);
+  const reference = locales.includes(DEFAULT_LOCALE) ? DEFAULT_LOCALE : locales[0];
+
+  if (reference) {
+    const defined = new Set(Object.keys(TRANSLATIONS[reference]));
+
+    // Some keys are chosen at runtime (a stored "back to ..." label, a
+    // category name), so they're written as plain strings rather than
+    // t('...') calls. Anything that exactly matches a key counts as used.
+    if (files.has(SCRIPT)) {
+      const src = read(SCRIPT);
+      for (const m of src.matchAll(/'([^'\n]+)'/g)) {
+        if (defined.has(m[1]) && !i18nUsage.has(m[1])) i18nUsage.set(m[1], { file: SCRIPT, line: lineAt(src, m.index) });
+      }
+    }
+
+    for (const [key, where] of i18nUsage) {
+      if (!defined.has(key)) {
+        report('error', where.file, where.line, `Translation key "${key}" is used here but isn't defined in i18n.js.`);
+      }
+    }
+    for (const key of defined) {
+      if (!i18nUsage.has(key)) {
+        report('warning', I18N_FILE, lineOf(read(I18N_FILE), `'${key}'`), `"${key}" is translated but nothing uses it - wire it up with data-i18n, or delete it.`);
+      }
+    }
+  }
+}
+
+// ---- 5. Asset weight + orphans ------------------------------------------------
 for (const f of files) {
   const kb = sizeKB(f);
   if (/^images\/.*\.(webp|png|jpe?g|gif|avif)$/i.test(f)) {

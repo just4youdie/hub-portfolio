@@ -1,7 +1,9 @@
 # Ruben Alves - Portfolio
 
 A dark, metallic, CGI-inspired portfolio in several pages. Your Spline
-scene runs as a darkened, full-page background on every page.
+scene runs as a darkened, full-page background on every page. The whole
+site reads in **English or Portuguese** - there's an EN/PT switch in the
+header of every page (see "Languages (EN / PT)" below).
 
 ## Pages
 
@@ -282,12 +284,107 @@ the Icon Library (linking to Behance) and an Instagram post render
 Library also appears on its own under **Graphic Design**, using the
 same image and link.
 
+## Languages (EN / PT)
+
+Every page carries an **EN / PT** switch in the header. There's no build
+step and no second copy of any page: the text is swapped in the browser,
+`<html lang>` is updated to match, and the choice is remembered in
+`localStorage` for the next visit.
+
+On a first visit with no saved choice, the site uses (in order) a
+`?lang=` in the URL, then the browser's own language - so a visitor
+whose browser is set to Portuguese lands in Portuguese - then falls back
+to English. `?lang=pt` is useful for sharing a link that opens in a
+specific language; it's removed from the address bar once it's been read,
+so it doesn't follow people around (`?id=` and `?tab=` are left alone).
+
+### Where the text lives
+
+**UI copy** - everything that isn't a project - is in `i18n.js`, once per
+language:
+
+```js
+const TRANSLATIONS = {
+  en: { 'about.tools.learning': 'Currently learning', ... },
+  pt: { 'about.tools.learning': 'A aprender', ... },
+};
+```
+
+The markup points at a key instead of repeating the text:
+
+```html
+<h4 data-i18n="about.tools.learning">Currently learning</h4>
+
+<!-- attributes: "attribute:key", several separated by ; -->
+<meta name="description" data-i18n-attr="content:meta.about.desc" content="...">
+<input data-i18n-attr="placeholder:x.placeholder;aria-label:x.aria">
+```
+
+The English text stays in the HTML as-is. It's what search engines and
+anyone without JavaScript see, and it keeps the file readable - the key
+is the pointer, not a replacement for the copy.
+
+Headings that mix styles are split rather than translated as markup, so a
+translation is never allowed to contain HTML:
+
+```html
+<h2><span data-i18n="about.title.line1">3D thinking.</span><br>
+    <em data-i18n="about.title.line2">Graphic discipline.</em></h2>
+```
+
+**Project titles and descriptions** stay next to the project in
+`script.js`, so adding a project is still one edit in one place:
+
+```js
+{
+  id: '3d-006',
+  title: 'Sand',
+  description: 'A close-up, realistic beach sand environment...',
+  i18n: {
+    pt: {
+      title: 'Areia',
+      description: 'Um ambiente realista de areia de praia...',
+    },
+  },
+}
+```
+
+Anything you leave out falls back to the English field, so a proper noun
+("Jorge", "UrbanEyePT") simply doesn't need an entry.
+
+**Tags** are shared by many projects, so they're translated once in
+`TAG_TRANSLATIONS` at the bottom of `i18n.js` - not repeated per project.
+A tag with no entry is shown as written, which is what you want for
+names like "Blender", "Geometry Nodes" or "Game Jam!". Search matches the
+tags as they appear on screen, so searching works in either language.
+
+### Adding copy
+
+1. Add the key to **both** `en` and `pt` in `i18n.js`.
+2. Point at it from the markup with `data-i18n` (or `data-i18n-attr`), or
+   from `script.js` with `I18N.t('your.key')`.
+3. Run `npm run validate`.
+
+`npm run validate` fails if a key is used but never defined, if the two
+languages don't define exactly the same keys, or if a `{placeholder}`
+appears in one language but not the other - so a half-translated string
+can't reach the site. It warns about keys that nothing uses, and about a
+project that has an English description but no Portuguese one.
+
+### Adding a language
+
+Add its code to `SUPPORTED_LANGUAGES` in `i18n.js`, add a matching block
+to `TRANSLATIONS`, and add a button to the `.lang-switch` in each page's
+header. The checks above then apply to it automatically.
+
 ## Before publishing
 
 1. Put your CV PDF in this folder and name it exactly `cv.pdf`.
 2. Add your real projects and images in `script.js` as described above.
 3. Double check the social links in `contact.html` match your current
-   profiles.
+   profiles. (The Instagram link currently points at `instagram.com`
+   itself rather than a profile - `npm run validate` warns about it.)
+4. Read each page once in **both languages** using the EN/PT switch.
 
 ## Spline background
 
