@@ -32,10 +32,10 @@ jobs:
           key: lychee-${{ github.sha }}
           restore-keys: lychee-
 
-      - name: Check links in pages, script.js (PROJECTS) and styles.css
+      - name: Check links in pages, script.js (PROJECTS), i18n.js and styles.css
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --config lychee.toml '_site/**/*.html' _site/script.js _site/styles.css
+          args: --config lychee.toml '_site/**/*.html' _site/script.js _site/i18n.js _site/styles.css
 
       # lychee doesn't read the <spline-viewer url="..."> attribute, and the
       # 3D background silently disappears if the scene is unpublished.

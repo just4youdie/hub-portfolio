@@ -65,6 +65,21 @@ button{font-family:inherit;touch-action:manipulation}
 .nav-cv:hover{border-color:rgba(255,255,255,.55);box-shadow:var(--glow-silver)}
 .menu-toggle{display:none;background:none;border:0;font-size:20px;color:var(--ink);padding:12px;margin:-12px;line-height:1}
 
+/* ---------- Language switch (EN / PT) ----------
+   A two-button segmented control in the header. The active language
+   reuses the same brushed-chrome fill as an active Work tab, so the
+   "you are here" cue is identical everywhere on the site. */
+.lang-switch{display:flex;align-items:center;border:1px solid var(--line-strong);overflow:hidden;flex-shrink:0}
+.lang-btn{
+  background:none;border:0;cursor:pointer;padding:8px 11px;line-height:1;
+  font:500 11px "DM Mono",monospace;letter-spacing:.08em;color:var(--muted);
+  transition:color .2s,background-color .2s;
+}
+.lang-btn+.lang-btn{border-left:1px solid var(--line)}
+.lang-btn:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+.lang-btn.active{background:var(--chrome-solid);background-size:220% 220%;color:#0A0A0A}
+.lang-btn:focus-visible{outline:2px solid var(--ink);outline-offset:-3px}
+
 /* ---------- Shared type ---------- */
 .eyebrow{font:500 10px/1.2 "DM Mono",monospace;letter-spacing:.14em;margin:0 0 14px;color:var(--muted)}
 h1,h2,h3,p{margin-top:0}
@@ -339,6 +354,8 @@ em{
   }
   .nav.open a{padding:14px 2px;width:100%;border-bottom:1px solid var(--line)}
   .nav.open a.nav-cv{margin-top:8px;border:1px solid var(--line-strong);text-align:center}
+  .nav.open .lang-switch{margin-top:10px}
+  .nav.open .lang-btn{flex:1 1 0;padding:13px 0;text-align:center}
 
   .home-hero,.work-page,.about-page,.contact-page,.commission-page{padding-left:6vw;padding-right:6vw}
   .home-hero{padding-top:5vh;padding-bottom:5vh}

@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Selected 3D and graphic design work by Ruben Alves.">
-  <title>Work - Ruben Alves</title>
+  <meta name="description" data-i18n-attr="content:meta.work.desc" content="Selected 3D and graphic design work by Ruben Alves.">
+  <title data-i18n="meta.work.title">Work - Ruben Alves</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="i18n.js"></script>
 </head>
 <body>
   <div class="noise" aria-hidden="true"></div>
@@ -15,35 +16,39 @@
   </div>
 
   <header class="site-header">
-    <a class="brand" href="index.html" aria-label="Homepage">
+    <a class="brand" href="index.html" data-i18n-attr="aria-label:nav.aria.brand" aria-label="Homepage">
       <span class="brand-mark">RA</span>
       <span>RUBEN ALVES</span>
     </a>
-    <nav class="nav" aria-label="Primary navigation">
-      <a href="index.html">Home</a>
-      <a href="work.html" class="active">Work</a>
-      <a href="about.html">About</a>
-      <a href="contact.html">Contact</a>
-      <a class="nav-cv wave-cta" href="cv.pdf" download>Download CV ↓</a>
+    <nav class="nav" data-i18n-attr="aria-label:nav.aria.primary" aria-label="Primary navigation">
+      <a href="index.html" data-i18n="nav.home">Home</a>
+      <a href="work.html" class="active" data-i18n="nav.work">Work</a>
+      <a href="about.html" data-i18n="nav.about">About</a>
+      <a href="contact.html" data-i18n="nav.contact">Contact</a>
+      <a class="nav-cv wave-cta" href="cv.pdf" download data-i18n="nav.cv">Download CV ↓</a>
+      <div class="lang-switch" role="group" data-i18n-attr="aria-label:nav.aria.language" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="en" data-i18n-attr="aria-label:nav.aria.langEn" aria-label="Switch to English" aria-pressed="true">EN</button>
+        <button type="button" class="lang-btn" data-lang="pt" data-i18n-attr="aria-label:nav.aria.langPt" aria-label="Mudar para português" aria-pressed="false">PT</button>
+      </div>
     </nav>
-    <button type="button" class="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
+    <button type="button" class="menu-toggle" data-i18n-attr="aria-label:nav.aria.menu" aria-label="Open menu" aria-expanded="false">☰</button>
   </header>
 
   <main>
     <section class="work-page">
       <div class="work-intro">
-        <p class="eyebrow">SELECTED WORK</p>
-        <h2>Projects with <em>a point of view.</em></h2>
-        <p>Pick a category, then search by tag to narrow the results - separate multiple tags with a comma.</p>
+        <p class="eyebrow" data-i18n="work.eyebrow">SELECTED WORK</p>
+        <h2><span data-i18n="work.title.line1">Projects with</span> <em data-i18n="work.title.line2">a point of view.</em></h2>
+        <p data-i18n="work.intro">Pick a category, then search by tag to narrow the results - separate multiple tags with a comma.</p>
       </div>
 
-      <div class="work-tabs" role="tablist" aria-label="Work categories">
-        <button type="button" class="tab-btn active" data-tab="3d">3D</button>
-        <button type="button" class="tab-btn" data-tab="graphic">Graphic Design</button>
-        <button type="button" class="tab-btn" data-tab="3dprint">3D Printable</button>
-        <button type="button" class="tab-btn" data-tab="contests">Contests</button>
-        <button type="button" class="tab-btn" data-tab="commissions">Commissions</button>
-        <button type="button" class="tab-btn" data-tab="games">Games</button>
+      <div class="work-tabs" role="tablist" data-i18n-attr="aria-label:work.tabs.aria" aria-label="Work categories">
+        <button type="button" class="tab-btn active" role="tab" aria-selected="true" aria-controls="gallery-panel" data-tab="3d" data-i18n="tab.3d">3D</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" aria-controls="gallery-panel" data-tab="graphic" data-i18n="tab.graphic">Graphic Design</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" aria-controls="gallery-panel" data-tab="3dprint" data-i18n="tab.3dprint">3D Printable</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" aria-controls="gallery-panel" data-tab="contests" data-i18n="tab.contests">Contests</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" aria-controls="gallery-panel" data-tab="commissions" data-i18n="tab.commissions">Commissions</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" aria-controls="gallery-panel" data-tab="games" data-i18n="tab.games">Games</button>
       </div>
 
       <div class="work-search">
@@ -54,11 +59,12 @@
           list="tag-options"
           placeholder="Search by tag - e.g. 3D Modelling"
           aria-label="Search projects by tag"
+          data-i18n-attr="aria-label:work.search.aria"
         >
       </div>
       <datalist id="tag-options"></datalist>
 
-      <div class="gallery-grid" data-gallery-grid></div>
+      <div class="gallery-grid" id="gallery-panel" role="tabpanel" tabindex="0" data-gallery-grid></div>
     </section>
   </main>
 
